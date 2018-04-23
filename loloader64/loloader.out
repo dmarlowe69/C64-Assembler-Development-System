@@ -1,0 +1,14 @@
+
+C:\Users\denton\Desktop\My Commodore\Commodore MADS Projects\Distribution\MADS 64 Loader64\loloader64tass>64tass loloader.asm -L loloader.lst -o loloader.prg  
+64tass Turbo Assembler Macro V1.53.1515
+64TASS comes with ABSOLUTELY NO WARRANTY; This is free software, and you
+are welcome to redistribute it under certain conditions; See LICENSE!
+
+Assembling file:   loloader.asm
+Assembling file:   loader.asm
+Error messages:    None
+Warning messages:  None
+Passes:            3
+Memory range:      $0801-$0b3f   $033f
+
+C:\Users\denton\Desktop\My Commodore\Commodore MADS Projects\Distribution\MADS 64 Loader64\loloader64tass>rem pause 

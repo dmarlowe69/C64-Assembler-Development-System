@@ -1,0 +1,12 @@
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Dos 5.1\ccdos64tass>64tass ccdos.asm -L ccdos.lst -o ccdos.prg  
+64tass Turbo Assembler Macro V1.53.1515
+64TASS comes with ABSOLUTELY NO WARRANTY; This is free software, and you
+are welcome to redistribute it under certain conditions; See LICENSE!
+
+Assembling file:   ccdos.asm
+Error messages:    1
+Warning messages:  None
+Passes:            1
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Dos 5.1\ccdos64tass>rem pause 

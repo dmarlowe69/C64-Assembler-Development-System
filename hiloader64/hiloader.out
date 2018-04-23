@@ -1,0 +1,14 @@
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Loader\hiloader64tass>64tass hiloader.asm -L hiloader.lst -o hiloader.prg  
+64tass Turbo Assembler Macro V1.53.1515
+64TASS comes with ABSOLUTELY NO WARRANTY; This is free software, and you
+are welcome to redistribute it under certain conditions; See LICENSE!
+
+Assembling file:   hiloader.asm
+Assembling file:   loader.asm
+Error messages:    None
+Warning messages:  None
+Passes:            3
+Memory range:      $c800-$cb30   $0331
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Loader\hiloader64tass>rem pause 

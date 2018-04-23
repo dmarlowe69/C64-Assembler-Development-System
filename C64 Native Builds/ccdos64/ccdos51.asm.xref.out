@@ -1,0 +1,1490 @@
+CCDOS51.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00003  0000              ;*********************************
+00004  0000              *=$CC00                ;SYS52224
+00005  CC00              ;*********************************
+00006  CC00              ;
+00007  CC00              ;       DOS 5.1 DISK WEDGE
+00008  CC00              ;
+00009  CC00              ;      VERSION V5.1/071382
+00010  CC00              ;      BY BOB FAIRBAIRN
+00011  CC00              ;        COPYRIGHT 1982
+00012  CC00              ;  COMMODORE BUSINESS MACHINES
+00013  CC00              ;
+00014  CC00              ;  DOCUMENTED BY DENTON MARLOWE
+00015  CC00              ;
+00016  CC00              ;*********************************
+00017  CC00              ; MAIN BODY OF CODE
+00018  CC00              ;*********************************
+00019  CC00              .FIL   DOS51.ASM
+00020  CC00              ;*********************************
+00021  CC00              ;
+00022  CC00              ;       DOS 5.1 DISK WEDGE
+00023  CC00              ;
+00024  CC00              ;      VERSION V5.1/071382
+00025  CC00              ;      BY BOB FAIRBAIRN
+00026  CC00              ;        COPYRIGHT 1982
+00027  CC00              ;  COMMODORE BUSINESS MACHINES
+00028  CC00              ;
+00029  CC00              ;  DOCUMENTED BY DENTON MARLOWE
+00030  CC00              ;
+00031  CC00              ;*********************************
+00032  CC00              ; C-64 SYSTEM EQUATES
+00033  CC00              ;*********************************
+00034  CC00              ; BASIC TEXT AREA POINTERS
+00035  CC00              ;*********************************
+00036  CC00              TXTTAB=$2B             ;START OF BASIC TEXT
+00037  CC00              VARTAB=$2D             ;START OF BASIC STORAGE
+00038  CC00              ;*********************************
+00039  CC00              ; CHRGET ADDRESSES
+00040  CC00              ;*********************************
+00041  CC00              CHRGET=$73             ;BASIC INPUT PROCESSOR
+00042  CC00              CHRGOT=$79             ;GET CURRENT CHARACTER
+00043  CC00              TXTPTR=$7A             ;CHRGET POINTER
+00044  CC00              POINTB=$7C             ;CHRGET PATCH POINT
+00045  CC00              SPCCHK=$80             ;CHRGET SPACE CHECK
+00046  CC00              CHREXT=$8A             ;CHRGET EXIT
+00047  CC00              ;*********************************
+00048  CC00              ; TEMPORARY STORAGE
+00049  CC00              ;*********************************
+00050  CC00              OFFSET=$A5             ;OFFSET INTO COMMANDS
+00051  CC00              SAVA   =$A6            ;ACCUMULATE STORAGE
+00052  CC00              SAVX   =$A7            ;X INDEX REG STORAGE
+00053  CC00              TEMP   =$C3            ;COUNTER
+00054  CC00              ;*********************************
+00055  CC00              ; DISK I/O ADDRESS
+00056  CC00              ;*********************************
+00057  CC00              STATUS=$90             ;KERNAL I/O STATUS
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0003
+
+LINE# LOC   CODE        LINE
+
+
+00058  CC00              EAL    =$AE            ;END OF LOAD ADDRESS
+00059  CC00              FNLEN  =$B7            ;LENGHT OF FILENAME
+00060  CC00              SA     =$B9            ;SECONDARY ADDRESS
+00061  CC00              FA     =$BA            ;DEVICE NUMBER
+00062  CC00              FNADR  =$BB            ;POINTER TO FILENAME
+00063  CC00              ;*********************************
+00064  CC00              STACK  =$0100          ;6502 PROCESSOR STACK
+00065  CC00              ;*********************************
+00066  CC00              ; BASIC ROM ADDRESSES
+00067  CC00              ;*********************************
+00068  CC00              LNKPRG=$A533           ;RELINK BASIC LINES
+00069  CC00              RUNC   =$A659          ;SETUP BASIC
+00070  CC00              STXPT  =$A68E          ;SETUP FOR RUN
+00071  CC00              NEWSTT=$A7AE           ;RUN BASIC PRG
+00072  CC00              SYNERR=$AF08           ;SYNTAX ERROR
+00073  CC00              LINPRT=$BDCD           ;PRINT LINE NUMBER
+00074  CC00              SAVET  =$E159          ;SAVE (PARAMS SET)
+00075  CC00              BASSFT=$E386           ;RETURN TO BASIC
+00076  CC00              CHRCPY=$E3AB           ;ROM COPY OF CHRGET
+00077  CC00              PRT    =$E716          ;PRINT CHARACTER
+00078  CC00              SROPEN=$F3D5           ;OPEN FILE
+00079  CC00              XCLOSE=$F642           ;CLOSE FILE
+00080  CC00              ;*********************************
+00081  CC00              ; KERNAL JUMP TABLE
+00082  CC00              ;*********************************
+00083  CC00              LISTEN=$FFB1           ;SEND LISTEN
+00084  CC00              SECOND=$FF93           ;SEND SECOND
+00085  CC00              CIOUT  =$FFA8          ;SEND CHAR TO SERIAL
+00086  CC00              UNLSN  =$FFAE          ;SEND UNLISTEN
+00087  CC00              TALK   =$FFB4          ;SEND TALK
+00088  CC00              TKSA   =$FF96          ;SEND TALK SECOND
+00089  CC00              ACPTR  =$FFA5          ;GET CHAR FROM BUS
+00090  CC00              UNTLK  =$FFAB          ;SEND UNTALK
+00091  CC00              STOP   =$FFE1          ;CHECK STOP KEY
+00092  CC00              GETIN  =$FFE4          ;GET KEY
+00093  CC00              LOAD   =$FFD5          ;LOAD PRG
+00094  CC00              SETMSG=$FF90           ;KERNAL MESSAGES
+00095  CC00              ;*********************************
+00096  CC00              ; ENTRY POINT
+00097  CC00              ;*********************************
+00098  CC00  4C E1 CC    DOSWDG JMP START       ;JMP PAST DATA
+00099  CC03              ;*********************************
+00100  CC03              ; SYMBOL VECTORS (HIGH BYTE)
+00101  CC03              ;*********************************
+00102  CC03  CE          HIHVEC .BYTE >VECTR1   ;%
+00103  CC04  CE          .BYTE  >VECTR2         ;/
+00104  CC05  CE          .BYTE  >VECTR3         ;TOKENED /
+00105  CC06  CE          .BYTE  >VECTR4         ;^
+00106  CC07  CE          .BYTE  >VECTR5         ;TOKENED ^
+00107  CC08  CE          .BYTE  >VECTR6         ;_
+00108  CC09  CD          .BYTE  >VECTR7         ;>
+00109  CC0A  CD          .BYTE  >VECTR8         ;TOKENED >
+00110  CC0B  CD          .BYTE  >VECTR9         ;@
+00111  CC0C  CE          .BYTE  >VECTRA         ;#
+00112  CC0D  CE          .BYTE  >VECTRB         ;Q
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0004
+
+LINE# LOC   CODE        LINE
+
+
+00113  CC0E              ;*********************************
+00114  CC0E              ; SYMBOL VECTORS (LOW BYTE)
+00115  CC0E              ;*********************************
+00116  CC0E  21          LOWVEC .BYTE <VECTR1   ;%
+00117  CC0F  21          .BYTE  <VECTR2         ;/
+00118  CC10  21          .BYTE  <VECTR3         ;TOKENED /
+00119  CC11  21          .BYTE  <VECTR4         ;^
+00120  CC12  21          .BYTE  <VECTR5         ;TOKENED ^
+00121  CC13  78          .BYTE  <VECTR6         ;_
+00122  CC14  47          .BYTE  <VECTR7         ;>
+00123  CC15  47          .BYTE  <VECTR8         ;TOKENED >
+00124  CC16  47          .BYTE  <VECTR9         ;@
+00125  CC17  7E          .BYTE  <VECTRA         ;#
+00126  CC18  6B          .BYTE  <VECTRB         ;Q
+00127  CC19              ;*********************************
+00128  CC19              ; COMMAND SYMBOL TABLE
+00129  CC19              ;*********************************
+00130  CC19  25          SYMBOL .BYTE '%'       ;MACHINE LOAD
+00131  CC1A  2F          .BYTE  '/'             ;BASIC LOAD
+00132  CC1B  AD          .BYTE  $AD             ;/ (COM Z)
+00133  CC1C  5E          .BYTE  '^'             ;BASIC LOAD/RUN
+00134  CC1D  AE          .BYTE  $AE             ;^ (COM S)
+00135  CC1E  5F          .BYTE  '_'             ;BASIC SAVE
+00136  CC1F  3E          .BYTE  '>'             ;TOKENED MAIN
+00137  CC20  B1          .BYTE  $B1             ;> (COM E)
+00138  CC21  40          SYMBOC .BYTE '@'       ;MAIN COMMAND
+00139  CC22  23          .BYTE  '#'             ;FOR DEVICE #
+00140  CC23  51          .BYTE  'Q'             ;QUIT DOS
+00141  CC24              ;*********************************
+00142  CC24  00          .BYTE  $00             ;END OF TABLE
+00143  CC25  AA          .BYTE  $AA             ;FOR EXPANSION
+00144  CC26  AA          .BYTE  $AA             ;FOR EXPANSION
+00145  CC27              ;*********************************
+00146  CC27              ; 80 CHARACTER TEXT BUFFER
+00147  CC27              ;*********************************
+00148  CC27  AA          BUFFER .BYTE $AA,$AA,$AA
+00148  CC28  AA 
+00148  CC29  AA 
+00149  CC2A  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00149  CC2B  AA 
+00149  CC2C  AA 
+00149  CC2D  AA 
+00149  CC2E  AA 
+00149  CC2F  AA 
+00149  CC30  AA 
+00150  CC31  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00150  CC32  AA 
+00150  CC33  AA 
+00150  CC34  AA 
+00150  CC35  AA 
+00150  CC36  AA 
+00150  CC37  AA 
+00151  CC38  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00151  CC39  AA 
+00151  CC3A  AA 
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0005
+
+LINE# LOC   CODE        LINE
+
+
+00151  CC3B  AA 
+00151  CC3C  AA 
+00151  CC3D  AA 
+00151  CC3E  AA 
+00152  CC3F  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00152  CC40  AA 
+00152  CC41  AA 
+00152  CC42  AA 
+00152  CC43  AA 
+00152  CC44  AA 
+00152  CC45  AA 
+00153  CC46  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00153  CC47  AA 
+00153  CC48  AA 
+00153  CC49  AA 
+00153  CC4A  AA 
+00153  CC4B  AA 
+00153  CC4C  AA 
+00154  CC4D  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00154  CC4E  AA 
+00154  CC4F  AA 
+00154  CC50  AA 
+00154  CC51  AA 
+00154  CC52  AA 
+00154  CC53  AA 
+00155  CC54  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00155  CC55  AA 
+00155  CC56  AA 
+00155  CC57  AA 
+00155  CC58  AA 
+00155  CC59  AA 
+00155  CC5A  AA 
+00156  CC5B  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00156  CC5C  AA 
+00156  CC5D  AA 
+00156  CC5E  AA 
+00156  CC5F  AA 
+00156  CC60  AA 
+00156  CC61  AA 
+00157  CC62  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00157  CC63  AA 
+00157  CC64  AA 
+00157  CC65  AA 
+00157  CC66  AA 
+00157  CC67  AA 
+00157  CC68  AA 
+00158  CC69  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00158  CC6A  AA 
+00158  CC6B  AA 
+00158  CC6C  AA 
+00158  CC6D  AA 
+00158  CC6E  AA 
+00158  CC6F  AA 
+00159  CC70  AA          .BYTE  $AA,$AA,$AA,$AA,$AA,$AA,$AA
+00159  CC71  AA 
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0006
+
+LINE# LOC   CODE        LINE
+
+
+00159  CC72  AA 
+00159  CC73  AA 
+00159  CC74  AA 
+00159  CC75  AA 
+00159  CC76  AA 
+00160  CC77              ;*********************************
+00161  CC77              ; DEVICE NUMBER
+00162  CC77              ;*********************************
+00163  CC77  AA          DEVICE .BYTE $AA
+00164  CC78              ;*********************************
+00165  CC78              ; FILENAME SUFIX
+00166  CC78              ;*********************************
+00167  CC78  AA AA       SUFFIX .WORD $AAAA
+00168  CC7A              ;*********************************
+00169  CC7A              ; CURRENT SYMBOL
+00170  CC7A              ;*********************************
+00171  CC7A  AA          CURSYM .BYTE $AA
+00172  CC7B              ;*********************************
+00173  CC7B              ; DOS MANAGER MESSAGE
+00174  CC7B              ;*********************************
+00175  CC7B  0D          MANAGE .BYTE $0D,$0D
+00175  CC7C  0D 
+00176  CC7D  20 20       .BYTE  '      DOS MANAGER '
+00177  CC8F  56 35       .BYTE  'V5.1/071382',$0D,$0D
+00177  CC9A  0D 
+00177  CC9B  0D 
+00178  CC9C  20 20       .BYTE  '         BY  BOB FAIRBAIRN'
+00179  CCB6  0D          .BYTE  $0D,$0D
+00179  CCB7  0D 
+00180  CCB8  28 43       .BYTE  '(C) 1982 COMMODORE BUSINESS '
+00181  CCD4  4D 41       .BYTE  'MACHINES',$0D,$00
+00181  CCDC  0D 
+00181  CCDD  00 
+00182  CCDE              ;*********************************
+00183  CCDE              ; WEDGE CHRGET PATCH
+00184  CCDE              ;*********************************
+00185  CCDE  4C F3 CC    PATCH  JMP WEDGE
+00186  CCE1              ;*********************************
+00187  CCE1              ; WEDGE ACTIVATION ROUTINE
+00188  CCE1              ;
+00189  CCE1              ; PATCH INTO CHRGET IN ZEROPAGE,
+00190  CCE1              ; DEFINE USER'S CURRENT DEVICE
+00191  CCE1              ; NUMBER, AND PRINT COPYRIGHT
+00192  CCE1              ;
+00193  CCE1              ;*********************************
+00194  CCE1  A2 02       START  LDX #$02        ;SET COUNTER
+00195  CCE3  BD DE CC    S1     LDA PATCH,X     ;GET WEDGE
+00196  CCE6  95 7C              STA POINTB,X    ;STORE WEDGE
+00197  CCE8  CA                 DEX             ;COUNT-1
+00198  CCE9  10 F8              BPL S1          ;LOOP 3 TIMES
+00199  CCEB              ;
+00200  CCEB  A5 BA              LDA FA          ;STORE CURRENT
+00201  CCED  8D 77 CC           STA DEVICE      ;DEVICE NUMBER
+00202  CCF0  4C 4B CF           JMP PRMESS      ;PRINT MESSAGE
+00203  CCF3              ;*********************************
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0007
+
+LINE# LOC   CODE        LINE
+
+
+00204  CCF3              ; NORMAL ENTRY POINT
+00205  CCF3              ;
+00206  CCF3              ; SAVE CHARACTER FROM CHRGET,
+00207  CCF3              ; THEN CHECK CALLING ADDRESS ON
+00208  CCF3              ; TOP OF STACK FOR VALID DOS CALL
+00209  CCF3              ;
+00210  CCF3              ; VALID CALLING ADDRESSES ARE:
+00211  CCF3              ;
+00212  CCF3              ; DIRECT  MODE:$A48C+1=$A48D
+00213  CCF3              ; PROGRAM MODE:$A7E6+1=$A7E7
+00214  CCF3              ;
+00215  CCF3              ;*********************************
+00216  CCF3  85 A6       WEDGE  STA SAVA        ;SAVE CHARACTER
+00217  CCF5  86 A7              STX SAVX        ;SAVE X
+00218  CCF7  BA                 TSX             ;PUT SP INTO X
+00219  CCF8              ;
+00220  CCF8  BD 01 01           LDA STACK+1,X   ;CALLING LSB
+00221  CCFB  C9 E6              CMP #$E6        ;LOW ADDRESS
+00222  CCFD  F0 04              BEQ W1          ;
+00223  CCFF  C9 8C              CMP #$8C        ;LOW ADDRESS
+00224  CD01  D0 17              BNE COMMON      ;EXIT WEDGE
+00225  CD03              ;
+00226  CD03  BD 02 01    W1     LDA STACK+2,X   ;CALLING MSB
+00227  CD06  C9 A7              CMP #$A7        ;
+00228  CD08  F0 04              BEQ FIND        ;
+00229  CD0A  C9 A4              CMP #$A4        ;
+00230  CD0C  D0 0C              BNE COMMON      ;EXIT WEDGE
+00231  CD0E              ;*********************************
+00232  CD0E              ; CHECK COMMAND AGAINST TABLE
+00233  CD0E              ;*********************************
+00234  CD0E  A5 A6       FIND   LDA SAVA        ;GET CHARACTER
+00235  CD10  A2 08              LDX #NUMCMD     ;NUMBER OF COMANDS
+00236  CD12              ;
+00237  CD12  DD 19 CC    F1     CMP SYMBOL,X    ;CHECK COMMAND
+00238  CD15  F0 11              BEQ FOUND       ;MATCH?
+00239  CD17  CA                 DEX             ;COUNT-1
+00240  CD18  10 F8              BPL F1          ;CHECK ALL COMANDS
+00241  CD1A              ;*********************************
+00242  CD1A              ; MIMIC CHRGET TEST
+00243  CD1A              ;*********************************
+00244  CD1A  A5 A6       COMMON LDA SAVA        ;GET CHARACTER
+00245  CD1C  A6 A7              LDX SAVX        ;RESTORE X INDEX
+00246  CD1E  C9 3A              CMP #':'        ;CHRGET TEST
+00247  CD20  B0 03              BCS NOTCOL      ;IF => EXIT
+00248  CD22              ;
+00249  CD22  4C 80 00           JMP SPCCHK      ;CHECK SPACE
+00250  CD25              ;
+00251  CD25  4C 8A 00    NOTCOL JMP CHREXT      ;CHRGET RTS
+00252  CD28              ;*********************************
+00253  CD28              ; GOT WEDGE COMMAND
+00254  CD28              ;*********************************
+00255  CD28  86 A5       FOUND  STX OFFSET      ;SAVE X
+00256  CD2A  8D 7A CC           STA CURSYM      ;GET SYMBOL
+00257  CD2D  20 A3 CE           JSR PROCES      ;PROCESS IT
+00258  CD30              ;*********************************
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0008
+
+LINE# LOC   CODE        LINE
+
+
+00259  CD30              ; SET-UP CURRENT FILENAME AND DEV
+00260  CD30              ;
+00261  CD30              ; SET FILENAME ADDRESS POINTER
+00262  CD30              ; TO THE DOS BUFFER, AND SET THE
+00263  CD30              ; DEVICE ADDRESS TO THE DOS DEVICE
+00264  CD30              ;
+00265  CD30              ;*********************************
+00266  CD30  A6 A5              LDX OFFSET      ;SETUP X
+00267  CD32  A9 27              LDA #<BUFFER    ;LOW BUFFER
+00268  CD34  85 BB              STA FNADR       ;FILENAME
+00269  CD36  A9 CC              LDA #>BUFFER    ;HIGH BUFFER
+00270  CD38  85 BC              STA FNADR+1     ;FILENAME
+00271  CD3A  AD 77 CC           LDA DEVICE      ;GET DEVICE
+00272  CD3D  85 BA              STA FA          ;SET IT
+00273  CD3F              ;*********************************
+00274  CD3F              ; RTS TO ROUTINE WITH STACK TRICK
+00275  CD3F              ;
+00276  CD3F              ; PUSH THE COMMAND VECTOR ONTO
+00277  CD3F              ; THE STACK HIGH BYTE THEN LOW
+00278  CD3F              ; BYTE. THIS VECTOR IS THE ADDRESS
+00279  CD3F              ; MINUS ONE. THE RTS POPS THE
+00280  CD3F              ; ADDRESS AS IF IT WERE A RETURN
+00281  CD3F              ; ADDRESS AND ADDS ONE TO IT.
+00282  CD3F              ; THEN X INDEX CONTAINS THE OFFSET
+00283  CD3F              ; TO THE COMMAND FROM ABOVE.
+00284  CD3F              ;
+00285  CD3F              ;*********************************
+00286  CD3F  BD 03 CC    XECUTE LDA HIHVEC,X    ;GET HIGH VEC
+00287  CD42  48                 PHA                ;PUSH IT
+00288  CD43  BD 0E CC           LDA LOWVEC,X       ;GET LOW VEC
+00289  CD46  48                 PHA                ;PUSH
+00290  CD47  60                 RTS                ;STACK JMP
+00291  CD48              ;*********************************
+00292  CD48              ; DOS WEDGE MAIN COMMAND ROUTINE
+00293  CD48              ;
+00294  CD48              ; EXECUTE @ COMMANDS
+00295  CD48              ;
+00296  CD48              ; THIS ROUTINE EXECUTES COMMANDS
+00297  CD48              ; WHICH ARE PRECEEDED WITH THE
+00298  CD48              ; COMMAND SYMBOL ("@" OR ">")
+00299  CD48              ;
+00300  CD48              ; THESE COMMANDS INCLUDE:
+00301  CD48              ;
+00302  CD48              ;  @          DISK DRIVE STATUS
+00303  CD48              ;  @$         READ DISK DIRECTORY
+00304  CD48              ;  @#DEVICE   CHANGE DOS DEVICE
+00305  CD48              ;  @<COMMAND> ANY 1541 DOS COMMAND
+00306  CD48              ;  @Q         TERMINATE WEDGE
+00307  CD48              ;
+00308  CD48              ;*********************************
+00309  CD48  98          COMMD  TYA             ;SAVE COMMAND
+00310  CD49  F0 45              BEQ ERROR       ;IF NULL STATUS
+00311  CD4B              ;
+00312  CD4B  A2 09              LDX #NUMCMD+1   ;OFFSET TO COMANDS
+00313  CD4D  BD 19 CC    CHKSUB LDA SYMBOL,X    ;GET A SYMBOL
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0009
+
+LINE# LOC   CODE        LINE
+
+
+00314  CD50  F0 08              BEQ DISKCD      ;END OF TABLE?
+00315  CD52  CD 27 CC           CMP BUFFER      ;CHECK COMMAND
+00316  CD55  F0 0D              BEQ SUBCOM      ;SUB COMAND?
+00317  CD57              ;
+00318  CD57  E8                 INX             ;NEXT COMANND
+00319  CD58  10 F3              BPL CHKSUB      ;CHECK ALL
+00320  CD5A              ;
+00321  CD5A  AD 27 CC    DISKCD LDA BUFFER      ;GET COMMAND
+00322  CD5D  C9 24              CMP #'$'        ;DIRECTORY?
+00323  CD5F  F0 51              BEQ DIRECT      ;IF SO BRANCH
+00324  CD61              ;
+00325  CD61  4C 71 CD           JMP SENDCD      ;SEND COMMAND
+00326  CD64              ;*********************************
+00327  CD64              ; SUB COMMAND
+00328  CD64              ;
+00329  CD64              ; SET FILENAME ADDRESS POINTER
+00330  CD64              ; TO THE DOS SUB-BUFFER, AND
+00331  CD64              ; DECREASE THE FILENAME LENGHT BY
+00332  CD64              ; ONE TO ACCOUNT FOR THE "@"
+00333  CD64              ;
+00334  CD64              ;*********************************
+00335  CD64  C6 B7       SUBCOM DEC FNLEN       ;DEC NAME LEN
+00336  CD66  A9 28              LDA #<SUBBUF    ;SUB BUFFER
+00337  CD68  85 BB              STA FNADR       ;FILENAME
+00338  CD6A  A9 CC              LDA #>SUBBUF    ;SUB BUFFER
+00339  CD6C  85 BC              STA FNADR+1     ;FILENAME
+00340  CD6E  4C 3F CD           JMP XECUTE      ;GO DO IT
+00341  CD71              ;*********************************
+00342  CD71              ; SEND COMMAND STRING TO DISK
+00343  CD71              ;
+00344  CD71              ; COMMAND THE DEVICE TO LISTEN
+00345  CD71              ; USING THE COMMAND CHANNEL (15),
+00346  CD71              ; DUMP CHARCTERS IN DOS BUFFER
+00347  CD71              ; AND THEN UNLISTEN DEVICE
+00348  CD71              ;
+00349  CD71              ;*********************************
+00350  CD71  A5 BA       SENDCD LDA FA          ;GET DEVICE
+00351  CD73  20 B1 FF           JSR LISTEN      ;GET IT TO LISTEN
+00352  CD76  A9 6F              LDA #$0F+$60    ;SEC ORED WITH $60
+00353  CD78  85 B9              STA SA          ;SET SECONDARY ADRS
+00354  CD7A  20 93 FF           JSR SECOND      ;SEND TO DEVICE
+00355  CD7D              ;
+00356  CD7D  A0 00              LDY #$00        ;INDEX COUNTER
+00357  CD7F  B9 27 CC    SEND   LDA BUFFER,Y    ;GET CHARACTER
+00358  CD82  20 A8 FF           JSR CIOUT       ;SEND TO DEVICE
+00359  CD85  C8                 INY             ;COUNT+1
+00360  CD86  C4 B7              CPY FNLEN       ;ALL CHARACTERS?
+00361  CD88  90 F5              BCC SEND        ;SEND ALL OF THEM
+00362  CD8A              ;
+00363  CD8A  20 AE FF           JSR UNLSN       ;UNLISTEN DEVICE
+00364  CD8D  4C AF CD           JMP EEXIT       ;EXIT TO CHRGOT
+00365  CD90              ;*********************************
+00366  CD90              ; READ DISK ERROR STATUS (@)
+00367  CD90              ;
+00368  CD90              ; COMMAND DEVICE TO TALK, USING
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0010
+
+LINE# LOC   CODE        LINE
+
+
+00369  CD90              ; THE COMMAND CHANNEL (15),
+00370  CD90              ; INPUT BYTES FROM SERIAL BUS
+00371  CD90              ; AND PRINT THEM TO THE SCREEN
+00372  CD90              ; UNTILL A CARRIDGE RETURN IS
+00373  CD90              ; RECEIVED THEN UNTALK DEVICE
+00374  CD90              ;
+00375  CD90              ;*********************************
+00376  CD90  A5 BA       ERROR  LDA FA          ;GET DEVICE
+00377  CD92  20 B4 FF           JSR TALK        ;TALK DEVICE
+00378  CD95  A9 6F              LDA #$0F+$60    ;SEC+$60
+00379  CD97  85 B9              STA SA          ;PLACE SEC
+00380  CD99  20 96 FF           JSR TKSA        ;SEND SEC
+00381  CD9C              ;
+00382  CD9C  20 A5 FF    ERR1   JSR ACPTR       ;GET BYTE
+00383  CD9F  C9 0D              CMP #$0D        ;IS IF CR?
+00384  CDA1  F0 06              BEQ ERR2        ;IF SO DONE
+00385  CDA3  20 16 E7           JSR PRT         ;PRINT CHAR
+00386  CDA6  4C 9C CD           JMP ERR1        ;NEXT BYTE
+00387  CDA9              ;
+00388  CDA9  20 16 E7    ERR2   JSR PRT         ;PRINT CR
+00389  CDAC  20 AB FF           JSR UNTLK       ;UNTALK DEVICE
+00390  CDAF  4C 79 00    EEXIT  JMP CHRGOT      ;RETURN
+00391  CDB2              ;*********************************
+00392  CDB2              ; LIST DIRECTORY (@$)
+00393  CDB2              ;
+00394  CDB2              ; COMMAND DEVICE TO TALK, USING
+00395  CDB2              ; THE LOAD FILE CHANNEL (0),
+00396  CDB2              ; INPUT BYTES FROM SERIAL BUS
+00397  CDB2              ; AND PRINT THEM TO THE SCREEN
+00398  CDB2              ; UNTILL END OF FILE STATUS IS
+00399  CDB2              ; RECEIVED THEN UNTALK DEVICE.
+00400  CDB2              ;
+00401  CDB2              ; THE LISTING OF THE DIRECTORY
+00402  CDB2              ; TO THE SCREEN MAY BE SUSPENDED
+00403  CDB2              ; BY PRESSING THE SPACE BAR.
+00404  CDB2              ; TO RESUME PRESS ANY KEY.
+00405  CDB2              ; THE LIST MAY BE ABORTED BY
+00406  CDB2              ; PRESSING THE STOP KEY.
+00407  CDB2              ;
+00408  CDB2              ;*********************************
+00409  CDB2  A9 60       DIRECT LDA #$00+$60    ;SEC+$60
+00410  CDB4  85 B9              STA SA          ;PLACE IT
+00411  CDB6  20 D5 F3           JSR SROPEN      ;OPEN DIRECTORY FILE
+00412  CDB9  A5 BA              LDA FA          ;GET DEVICE
+00413  CDBB  20 B4 FF           JSR TALK        ;TALK DEVICE
+00414  CDBE  A5 B9              LDA SA          ;GET SECONDARY ADDRESS
+00415  CDC0  20 96 FF           JSR TKSA        ;SEND SECOND
+00416  CDC3  A9 00              LDA #$00        ;ZERO BYTE
+00417  CDC5  85 90              STA STATUS      ;RESET STATUS
+00418  CDC7              ;
+00419  CDC7  A0 03              LDY #$03        ;SKIP PAST LINK BYTES
+00420  CDC9  84 B7       NEXTLN STY FNLEN       ;SAVE THE COUNT
+00421  CDCB  20 A5 FF           JSR ACPTR       ;INPUT SERIAL BYTE
+00422  CDCE  85 C3              STA TEMP        ;STORE
+00423  CDD0  20 A5 FF           JSR ACPTR       ;INPUT SERIAL BYTE
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0011
+
+LINE# LOC   CODE        LINE
+
+
+00424  CDD3  85 C4              STA TEMP+1      ;STORE
+00425  CDD5  A4 90              LDY STATUS      ;CHECK STATUS
+00426  CDD7  D0 3E              BNE DIROFF      ;QUIT IF <>0
+00427  CDD9              ;
+00428  CDD9  A4 B7              LDY FNLEN       ;GET COUNT
+00429  CDDB  88                 DEY             ;COUNT-1
+00430  CDDC  D0 EB              BNE NEXTLN      ;SKIP LINKS,GET BLOCKS
+00431  CDDE              ;
+00432  CDDE  A6 C3              LDX TEMP        ;GET BLOCK FREE
+00433  CDE0  A5 C4              LDA TEMP+1      ;GET BLOCK FREE
+00434  CDE2  20 CD BD           JSR LINPRT      ;PRINT IT IN DECIMAL
+00435  CDE5              ;
+00436  CDE5  A9 20              LDA #' '        ;ASCII SPACE
+00437  CDE7  20 16 E7           JSR PRT         ;PRINT IT
+00438  CDEA              ;
+00439  CDEA  20 A5 FF    BODY   JSR ACPTR       ;GET SERIAL BYTE
+00440  CDED  A6 90              LDX STATUS      ;CHECK STATUS
+00441  CDEF  D0 26              BNE DIROFF      ;QUIT IF <>0
+00442  CDF1  C9 00              CMP #$00        ;WAS BYTE A NULL
+00443  CDF3  F0 18              BEQ FINLIN      ;0=END OF LINE
+00444  CDF5              ;
+00445  CDF5  20 16 E7           JSR PRT         ;PRINT CHAR
+00446  CDF8              ;
+00447  CDF8  20 E1 FF           JSR STOP        ;CHECK STOP
+00448  CDFB  F0 1A              BEQ DIROFF      ;ABORT ON STOP
+00449  CDFD              ;
+00450  CDFD  20 E4 FF           JSR GETIN       ;GET KEY PRESS
+00451  CE00  F0 E8              BEQ BODY        ;IF NONE CONT
+00452  CE02              ;
+00453  CE02  C9 20              CMP #' '        ;IS IT THE SPACE
+00454  CE04  D0 E4              BNE BODY        ;IF NOT CONT
+00455  CE06              ;
+00456  CE06  20 E4 FF    PAUSE  JSR GETIN       ;CHECK KEY PRESS
+00457  CE09  F0 FB              BEQ PAUSE       ;IF NONE PAUSE
+00458  CE0B  D0 DD              BNE BODY        ;ON KEYPRESS CONTINUE
+00459  CE0D              ;
+00460  CE0D  A9 0D       FINLIN LDA #$0D        ;CR AT LINE END
+00461  CE0F  20 16 E7           JSR PRT         ;PRINT IT
+00462  CE12  A0 02              LDY #$02        ;COUNT FOR SKIP
+00463  CE14  4C C9 CD           JMP NEXTLN      ;NEXT LINE
+00464  CE17              ;
+00465  CE17  20 42 F6    DIROFF JSR XCLOSE      ;CLOSE DIR FILE
+00466  CE1A  A9 0D              LDA #$0D         ;CR
+00467  CE1C  20 16 E7           JSR PRT          ;PRINT IT
+00468  CE1F  4C 79 00           JMP CHRGOT       ;RETURN
+00469  CE22              ;*********************************
+00470  CE22              ; EXECUTE LOAD (/, % AND ^)
+00471  CE22              ;
+00472  CE22              ; LOAD COMMANDS ARE AS FOLLOWS:
+00473  CE22              ;
+00474  CE22              ; /FILENAME  RELOCATABLE LOAD INTO
+00475  CE22              ;            BASIC TEXT AREA
+00476  CE22              ; ^FILENAME  RELOCATABLE LOAD AND
+00477  CE22              ;            RUN INTO BASIC AREA
+00478  CE22              ; %FILENAME  ABSOLUTE LOAD USING
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0012
+
+LINE# LOC   CODE        LINE
+
+
+00479  CE22              ;            SAVED ADDRESS IN FILE
+00480  CE22              ;
+00481  CE22              ;*********************************
+00482  CE22  A6 2B       LOADER LDX TXTTAB      ;GET START OF
+00483  CE24  A4 2C              LDY TXTTAB+1     ;BASIC TEXT
+00484  CE26              ;
+00485  CE26  AD 7A CC           LDA CURSYM      ;WHICH TYPE OF LOAD
+00486  CE29  C9 25              CMP #'%'        ;ABS LOAD
+00487  CE2B  D0 03              BNE RELOAD      ;IF NOT REL
+00488  CE2D              ;
+00489  CE2D  A9 01              LDA #$01        ;1=ABSOLUTE LOAD
+00490  CE2F              ;
+00491  CE2F  2C          .BYTE  $2C             ;SKIP NEXT INSTRUCTION
+00492  CE30              ;
+00493  CE30  A9 00       RELOAD LDA #$00        ;0=RELOCATABLE
+00494  CE32              ;
+00495  CE32  85 B9              STA SA          ;SECONDARY ADDRESS
+00496  CE34  A9 00              LDA #$00        ;0=LOAD
+00497  CE36  20 D5 FF           JSR LOAD        ;LOAD DISK FILE
+00498  CE39  B0 2E              BCS LERR3       ;LOAD ERROR?
+00499  CE3B              ;
+00500  CE3B  AD 7A CC           LDA CURSYM      ;WHICH TYPE OF LOAD?
+00501  CE3E  C9 25              CMP #'%'        ;ABSOLUTE LOAD?
+00502  CE40  F0 19              BEQ LERR1       ;IF SO DONE
+00503  CE42              ;
+00504  CE42  A5 AF              LDA EAL+1       ;END OF LOAD+1
+00505  CE44  85 2E              STA VARTAB+1    ;SET START OF VAR'S
+00506  CE46  A5 AE              LDA EAL         ;END OF LOAD+1
+00507  CE48  85 2D              STA VARTAB      ;START OF VARIABLES
+00508  CE4A              ;
+00509  CE4A  20 59 A6           JSR RUNC        ;SETUP BASIC
+00510  CE4D  20 33 A5           JSR LNKPRG      ;LNKPRG LINES
+00511  CE50              ;
+00512  CE50  AD 7A CC           LDA CURSYM      ;WHICH TYPE OF LOAD?
+00513  CE53  C9 AD              CMP #$AD        ;TOKENED "/"
+00514  CE55  F0 04              BEQ LERR1       ;IF SO DONE
+00515  CE57              ;
+00516  CE57  C9 2F              CMP #'/'        ;DIRECT LOAD
+00517  CE59  D0 03              BNE LERR2       ;RUN PRG
+00518  CE5B              ;
+00519  CE5B  4C 86 E3    LERR1  JMP BASSFT      ;WARM BASIC
+00520  CE5E              ;
+00521  CE5E  A9 00       LERR2  LDA #$00        ;ZERO BYTE
+00522  CE60  20 90 FF           JSR SETMSG      ;NO KERNAL MESSAGES
+00523  CE63  20 8E A6           JSR STXPT       ;SET TXTPTR FOR RUN
+00524  CE66  4C AE A7           JMP NEWSTT      ;RUN PROGRAM
+00525  CE69              ;
+00526  CE69  4C 86 E3    LERR3  JMP BASSFT      ;WARM BASIC
+00527  CE6C              ;*********************************
+00528  CE6C              ; DISABLE WEDGE (@Q)
+00529  CE6C              ;
+00530  CE6C              ; REMOVE WEDGE FROM CHRGET BY
+00531  CE6C              ; COPYING OVER THREE BYTE PATCH
+00532  CE6C              ; WITH CORRECT BYTES FROM ROM
+00533  CE6C              ;
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0013
+
+LINE# LOC   CODE        LINE
+
+
+00534  CE6C              ;*********************************
+00535  CE6C  A2 02       QUITER LDX #$02        ;SET COUNTER
+00536  CE6E  BD AB E3    ROM    LDA CHRCPY,X    ;GET ROM BYTE
+00537  CE71  95 7C              STA POINTB,X    ;PUT IN CHRGET
+00538  CE73  CA                 DEX             ;COUNT-1
+00539  CE74  10 F8              BPL ROM         ;MOVE 3 BYTES
+00540  CE76              ;
+00541  CE76  4C 86 E3           JMP BASSFT      ;BACK TO BASIC
+00542  CE79              ;*********************************
+00543  CE79              ; EXECUTE RELOCATABLE SAVE (_)
+00544  CE79              ;
+00545  CE79              ; THE CURRENT PROGRAM IS THE BASIC
+00546  CE79              ; TEXT AREA IS SAVED DISK WITH
+00547  CE79              ; USER GIVEN FILENAME. THE FILE
+00548  CE79              ; WILL BE A PRG (PROGRAM) TYPE.
+00549  CE79              ; THE SAVE COMMAND HAS THE FORM:
+00550  CE79              ;
+00551  CE79              ; _FILENAME
+00552  CE79              ;
+00553  CE79              ; THE DRIVE STATUS IS RETURNED
+00554  CE79              ; FOLLOWING THE SAVE
+00555  CE79              ;
+00556  CE79              ;*********************************
+00557  CE79  20 59 E1    SAVER  JSR SAVET       ;CALL SAVE
+00558  CE7C  4C 90 CD           JMP ERROR       ;DISPLAY STATUS
+00559  CE7F              ;*********************************
+00560  CE7F              ; SET DEVICE NUMBER (@#N)
+00561  CE7F              ;
+00562  CE7F              ; RESET CURRENT DEVICE NUMBER
+00563  CE7F              ; TO THAT ENTERED BY USER
+00564  CE7F              ; VALID DISK DEVICE NUMBERS ARE:
+00565  CE7F              ;       8,9,10 AND 11
+00566  CE7F              ; VALIDITY OF NUMBER NOT VERIFIED
+00567  CE7F              ;
+00568  CE7F              ;*********************************
+00569  CE7F  A4 B7       NUMBER LDY FNLEN       ;LENGHT OF COMAND
+00570  CE81  B9 27 CC           LDA BUFFER,Y    ;GET 1'S DIGIT
+00571  CE84  29 0F              AND #$0F        ;MASK HIGH NIBBLE
+00572  CE86  8D 77 CC           STA DEVICE      ;SET DEVICE NUM
+00573  CE89  88                 DEY             ;NUM CHARS-1
+00574  CE8A  F0 14              BEQ NEXIT       ;IF NO MORE EXIT
+00575  CE8C              ;
+00576  CE8C  B9 27 CC           LDA BUFFER,Y    ;GET 10'S DIGIT
+00577  CE8F  29 0F              AND #$0F        ;MASK HIGH NIBBLE
+00578  CE91  A8                 TAY             ;USE AS COUNTER
+00579  CE92  F0 0C              BEQ NEXIT       ;IF ITS ZERO EXIT
+00580  CE94              ;
+00581  CE94  AD 77 CC           LDA DEVICE      ;GET DEVICE NUM
+00582  CE97  18                 CLC             ;CLEAR CARRY
+00583  CE98  69 0A       NUM1   ADC #$0A        ;ADD 10
+00584  CE9A  88                 DEY             ;COUNT-1
+00585  CE9B  D0 FB              BNE NUM1        ;ADD ANOTHER 10?
+00586  CE9D              ;
+00587  CE9D  8D 77 CC           STA DEVICE      ;RESET DEVICE NUM
+00588  CEA0              ;
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0014
+
+LINE# LOC   CODE        LINE
+
+
+00589  CEA0  4C 79 00    NEXIT  JMP CHRGOT      ;EXIT
+00590  CEA3              ;*********************************
+00591  CEA3              ; PROCESS COMMAND INTO DOS BUFFER
+00592  CEA3              ;
+00593  CEA3              ; ONCE A VALID DOS WEDGE COMMAND
+00594  CEA3              ; IS ENTER, PROCESS THE COMMAND
+00595  CEA3              ; INTO THE DOS BUFFER, CHECKING
+00596  CEA3              ; SYNTAX AND NUMBER OF CHARACTERS
+00597  CEA3              ;
+00598  CEA3              ;*********************************
+00599  CEA3  A0 00       PROCES LDY #$00        ;COUNT=0
+00600  CEA5  20 73 00           JSR CHRGET      ;GET NEXT CHAR
+00601  CEA8  AA                 TAX             ;SAVE IN X REG
+00602  CEA9  D0 03              BNE DISBLK      ;NULL MARKS END
+00603  CEAB  4C 3A CF           JMP FIXBLK      ;GO AND EXIT
+00604  CEAE              ;
+00605  CEAE  A9 60       DISBLK LDA #$60        ;RTS INSTRUCTION
+00606  CEB0  85 7C              STA POINTB      ;DISABLE WEDGE
+00607  CEB2  A5 7A              LDA TXTPTR      ;GET POINTER
+00608  CEB4  48                 PHA             ;SAVE ON STACK
+00609  CEB5  A5 7B              LDA TXTPTR+1    ;GET POINTER
+00610  CEB7  48                 PHA             ;SAVE ON STACK
+00611  CEB8  8A                 TXA             ;RETREIVE CHAR
+00612  CEB9              ;
+00613  CEB9  C9 22       QUOTE1 CMP #'"'        ;CHECK FOR QUOTE
+00614  CEBB  F0 1E              BEQ NEXCHR      ;PROCESS FILENAME
+00615  CEBD              ;
+00616  CEBD  20 73 00           JSR CHRGET      ;GET NEXT CHAR
+00617  CEC0  D0 F7              BNE QUOTE1      ;LOOK FOR NEXT QUOTE
+00618  CEC2              ;
+00619  CEC2  68                 PLA             ;PULL POINTER
+00620  CEC3  85 7B              STA TXTPTR+1    ;RESTORE IT
+00621  CEC5  68                 PLA             ;PULL POINTER
+00622  CEC6  85 7A              STA TXTPTR      ;RESTORE IT
+00623  CEC8              ;
+00624  CEC8  20 79 00           JSR CHRGOT      ;GET LAST CHAR
+00625  CECB  A2 00              LDX #$00        ;ZERO INDEX
+00626  CECD  C9 22              CMP #'"'        ;IS IT THE QUOTE
+00627  CECF  F0 0E              BEQ NEX         ;CHECK END OF INPUT
+00628  CED1              ;
+00629  CED1  A2 02              LDX #$02        ;HIGH BYTE OF $02XX
+00630  CED3  E4 7B              CPX TXTPTR+1    ;IN DIRECT MODE?
+00631  CED5  D0 5C              BNE PROERR      ;IF NOT ERROR
+00632  CED7              ;
+00633  CED7  A2 00              LDX #$00        ;ZERO INDEX
+00634  CED9  F0 09              BEQ QUOTE2      ;PROCESS FURTHER
+00635  CEDB              ;
+00636  CEDB  68          NEXCHR PLA             ;TRASH POINTER
+00637  CEDC  68                 PLA             ;TRASH POINTER
+00638  CEDD  A2 00              LDX #$00        ;ZERO INDEX
+00639  CEDF              ;
+00640  CEDF  20 73 00    NEX    JSR CHRGET      ;GET NEXT CHAR
+00641  CEE2  F0 56              BEQ FIXBLK      ;IF END  EXIT
+00642  CEE4              ;
+00643  CEE4  C9 22       QUOTE2 CMP #'"'        ;ANOTHER QUOTE?
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0015
+
+LINE# LOC   CODE        LINE
+
+
+00644  CEE6  F0 52              BEQ FIXBLK      ;IF SO, END
+00645  CEE8              ;
+00646  CEE8  C9 3D              CMP #'='        ;EQUALS?
+00647  CEEA  F0 04              BEQ BRKT1       ;IF SO BRANCH
+00648  CEEC              ;
+00649  CEEC  C9 3A              CMP #':'        ;COLON?
+00650  CEEE  D0 02              BNE BRKT2       ;IF NOT BRANCH
+00651  CEF0              ;
+00652  CEF0  A2 FF       BRKT1  LDX #$FF        ;SET INDEX
+00653  CEF2  C9 5B       BRKT2  CMP #'['        ;LEFT BRACKET?
+00654  CEF4  F0 0A              BEQ NEX2        ;IF SO NEXT CHAR
+00655  CEF6              ;
+00656  CEF6  99 27 CC    PBUFF  STA BUFFER,Y    ;RETREIVE CHAR
+00657  CEF9  8D 79 CC           STA SUFFIX+1      ;PUT IN SUFFIX
+00658  CEFC  E8                 INX               ;INDEX+1
+00659  CEFD  C8                 INY               ;COUNT+1
+00660  CEFE  10 DF              BPL NEX           ;BRANCH ALWALYS
+00661  CF00              ;
+00662  CF00  20 73 00    NEX2   JSR CHRGET      ;GET NEXT CHAR
+00663  CF03  F0 2E              BEQ PROERR      ;IF NULL ERROR
+00664  CF05              ;
+00665  CF05  8D 78 CC           STA SUFFIX      ;STASH IN SUFFIX
+00666  CF08  20 73 00           JSR CHRGET      ;GET NEXT CHAR
+00667  CF0B  F0 26              BEQ PROERR      ;IF NULL ERROR
+00668  CF0D              ;
+00669  CF0D  C9 5D              CMP #']'        ;RIGHT BRACKET?
+00670  CF0F  D0 22              BNE PROERR      ;IF NOT ERROR
+00671  CF11              ;
+00672  CF11  E0 10              CPX #$10        ;MAXIMUM FILE NAME
+00673  CF13  B0 1E              BCS PROERR      ;IF LONGER, ERROR
+00674  CF15              ;
+00675  CF15  AD 79 CC           LDA SUFFIX+1    ;GET SUFFIX
+00676  CF18  C9 2A              CMP #'*'        ;WILD CARD?
+00677  CF1A  D0 05              BNE SP1         ;IF NOT STORE SPACE
+00678  CF1C              ;
+00679  CF1C  88                 DEY             ;COUNT-1
+00680  CF1D  CA                 DEX             ;INDEX-1
+00681  CF1E  A9 3F              LDA #'?'        ;WILD CARD SYMBOL
+00682  CF20              ;
+00683  CF20  2C          .BYTE  $2C             ;SKIP NEXT INSTRUCTION
+00684  CF21              ;
+00685  CF21  A9 20       SP1    LDA #' '        ;ASCII SPACE
+00686  CF23              ;
+00687  CF23  E0 0F       SP2    CPX #$0F        ;15 CHARACTERS
+00688  CF25              ;
+00689  CF25  B0 07              BCS PRO2        ;IF MORE CHECK SUFFIX
+00690  CF27              ;
+00691  CF27  99 27 CC           STA BUFFER,Y    ;BUFFER CHARACTER
+00692  CF2A  C8                 INY             ;COUNT+1
+00693  CF2B  E8                 INX             ;INDEX+1
+00694  CF2C  10 F5              BPL SP2         ;BRANCH ALWAYS
+00695  CF2E              ;
+00696  CF2E  AD 78 CC    PRO2   LDA SUFFIX      ;GET SUFFIX
+00697  CF31  D0 C3              BNE PBUFF       ;IF NOT NULL OK
+00698  CF33              ;
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0016
+
+LINE# LOC   CODE        LINE
+
+
+00699  CF33  A2 4C       PROERR LDX #$4C        ;JMP INSTRUCTION
+00700  CF35  86 7C              STX POINTB      ;RESTORE WEDGE
+00701  CF37  4C 08 AF           JMP SYNERR      ;SYNTAX ERROR
+00702  CF3A              ;
+00703  CF3A  84 B7       FIXBLK STY FNLEN       ;COUNT IS LENGTH
+00704  CF3C  A2 4C              LDX #$4C        ;JMP INSTRUCTION
+00705  CF3E  86 7C              STX POINTB      ;RESTORE WEDGE
+00706  CF40  20 79 00           JSR CHRGOT      ;GET LAST CHAR
+00707  CF43  F0 05              BEQ PREXIT      ;IF NULL EXIT
+00708  CF45              ;
+00709  CF45  20 73 00    NEX3   JSR CHRGET      ;CLEAR OUT REST
+00710  CF48  D0 FB              BNE NEX3        ;MORE, GET THEM
+00711  CF4A              ;
+00712  CF4A  60          PREXIT RTS             ;RETURN
+00713  CF4B              ;*********************************
+00714  CF4B              ; PRINT DOS MANAGER MESSAGE
+00715  CF4B              ;
+00716  CF4B              ; PRINT DOS TITLE, VERSION, AUTHOR
+00717  CF4B              ; AND COPYRIGHT NOTICE. THEN RTS
+00718  CF4B              ; BACK TO BASIC FROM SYS(52224)
+00719  CF4B              ;
+00720  CF4B              ;*********************************
+00721  CF4B  A2 00       PRMESS LDX #$00        ;MANAGE OFFSET
+00722  CF4D              ;
+00723  CF4D  BD 7B CC    PRM    LDA MANAGE,X    ;GET CHARACTER
+00724  CF50  F0 06              BEQ PEXIT       ;QUIT ON NULL
+00725  CF52  20 16 E7           JSR PRT         ;PRINT IT
+00726  CF55  E8                 INX             ;OFFSET+1
+00727  CF56  D0 F5              BNE PRM         ;NEXT CHARACTER
+00728  CF58              ;
+00729  CF58  60          PEXIT  RTS             ;FROM SYS CALL
+00730  CF59              ;*********************************
+00731  CF59              ; DOS COMMAND VECTORS
+00732  CF59              ;
+00733  CF59              ; THESE EQUATES ARE USED IN THE
+00734  CF59              ; SPLIT LOW/HIGH BYTE VECTOR
+00735  CF59              ; USED BY THE EXECUTE COMMAND
+00736  CF59              ; ROUTINE. DEFINING TABLE IN THIS
+00737  CF59              ; IS NECESSARY DUE TO NATURE
+00738  CF59              ; OF CBM ASSEMBLER64 CONVENTIONS
+00739  CF59              ; NOTE THE VECTORS ARE COMMAND
+00740  CF59              ; ADDRESSES MINUS ONE.
+00741  CF59              ;
+00742  CF59              ;*********************************
+00743  CF59              VECTR1= LOADER-1       ;%
+00744  CF59              VECTR2= LOADER-1       ;/
+00745  CF59              VECTR3= LOADER-1       ;TOKENED /
+00746  CF59              VECTR4= LOADER-1       ;^
+00747  CF59              VECTR5= LOADER-1       ;TOKENED ^
+00748  CF59              VECTR6= SAVER-1        ;_
+00749  CF59              VECTR7= COMMD-1        ;>
+00750  CF59              VECTR8= COMMD-1        ;TOKENED >
+00751  CF59              VECTR9= COMMD-1        ;@
+00752  CF59              VECTRA= NUMBER-1       ;@#
+00753  CF59              VECTRB= QUITER-1       ;@Q
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0017
+
+LINE# LOC   CODE        LINE
+
+
+00754  CF59              ;*********************************
+00755  CF59              ; NUMBER OF PRIMARY COMMANDS
+00756  CF59              ;*********************************
+00757  CF59              NUMCMD=SYMBOC-SYMBOL
+00758  CF59              ;*********************************
+00759  CF59              ; SUB-BUFFER
+00760  CF59              ;*********************************
+00761  CF59              SUBBUF=BUFFER+1
+00762  CF59              ;*********************************
+00763  CF59              .END
+
+
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ACPTR    FFA5    BASSFT   E386    BODY     CDEA    BRKT1    CEF0
+ BRKT2    CEF2    BUFFER   CC27    CHKSUB   CD4D    CHRCPY   E3AB
+ CHREXT   008A    CHRGET   0073    CHRGOT   0079    CIOUT    FFA8
+ COMMD    CD48    COMMON   CD1A    CURSYM   CC7A    DEVICE   CC77
+ DIRECT   CDB2    DIROFF   CE17    DISBLK   CEAE    DISKCD   CD5A
+ DOSWDG   CC00    EAL      00AE    EEXIT    CDAF    ERR1     CD9C
+ ERR2     CDA9    ERROR    CD90    F1       CD12    FA       00BA
+ FIND     CD0E    FINLIN   CE0D    FIXBLK   CF3A    FNADR    00BB
+ FNLEN    00B7    FOUND    CD28    GETIN    FFE4    HIHVEC   CC03
+ LERR1    CE5B    LERR2    CE5E    LERR3    CE69    LINPRT   BDCD
+ LISTEN   FFB1    LNKPRG   A533    LOAD     FFD5    LOADER   CE22
+ LOWVEC   CC0E    MANAGE   CC7B    NEWSTT   A7AE    NEX      CEDF
+ NEX2     CF00    NEX3     CF45    NEXCHR   CEDB    NEXIT    CEA0
+ NEXTLN   CDC9    NOTCOL   CD25    NUM1     CE98    NUMBER   CE7F
+ NUMCMD   0008    OFFSET   00A5    PATCH    CCDE    PAUSE    CE06
+ PBUFF    CEF6    PEXIT    CF58    POINTB   007C    PREXIT   CF4A
+ PRM      CF4D    PRMESS   CF4B    PRO2     CF2E    PROCES   CEA3
+ PROERR   CF33    PRT      E716    QUITER   CE6C    QUOTE1   CEB9
+ QUOTE2   CEE4    RELOAD   CE30    ROM      CE6E    RUNC     A659
+ S1       CCE3    SA       00B9    SAVA     00A6    SAVER    CE79
+ SAVET    E159    SAVX     00A7    SECOND   FF93    SEND     CD7F
+ SENDCD   CD71    SETMSG   FF90    SP1      CF21    SP2      CF23
+ SPCCHK   0080    SROPEN   F3D5    STACK    0100    START    CCE1
+ STATUS   0090    STOP     FFE1    STXPT    A68E    SUBBUF   CC28
+ SUBCOM   CD64    SUFFIX   CC78    SYMBOC   CC21    SYMBOL   CC19
+ SYNERR   AF08    TALK     FFB4    TEMP     00C3    TKSA     FF96
+ TXTPTR   007A    TXTTAB   002B    UNLSN    FFAE    UNTLK    FFAB
+ VARTAB   002D    VECTR1   CE21    VECTR2   CE21    VECTR3   CE21
+ VECTR4   CE21    VECTR5   CE21    VECTR6   CE78    VECTR7   CD47
+ VECTR8   CD47    VECTR9   CD47    VECTRA   CE7E    VECTRB   CE6B
+ W1       CD03    WEDGE    CCF3    XCLOSE   F642    XECUTE   CD3F
+
+
+END OF ASSEMBLY
+CCDOS51NL.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DOS 5.1 DISK WEDGE......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00019  CC00              .FIL   DOS51.ASM
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ACPTR    FFA5    BASSFT   E386    BODY     CDEA    BRKT1    CEF0
+ BRKT2    CEF2    BUFFER   CC27    CHKSUB   CD4D    CHRCPY   E3AB
+ CHREXT   008A    CHRGET   0073    CHRGOT   0079    CIOUT    FFA8
+ COMMD    CD48    COMMON   CD1A    CURSYM   CC7A    DEVICE   CC77
+ DIRECT   CDB2    DIROFF   CE17    DISBLK   CEAE    DISKCD   CD5A
+ DOSWDG   CC00    EAL      00AE    EEXIT    CDAF    ERR1     CD9C
+ ERR2     CDA9    ERROR    CD90    F1       CD12    FA       00BA
+ FIND     CD0E    FINLIN   CE0D    FIXBLK   CF3A    FNADR    00BB
+ FNLEN    00B7    FOUND    CD28    GETIN    FFE4    HIHVEC   CC03
+ LERR1    CE5B    LERR2    CE5E    LERR3    CE69    LINPRT   BDCD
+ LISTEN   FFB1    LNKPRG   A533    LOAD     FFD5    LOADER   CE22
+ LOWVEC   CC0E    MANAGE   CC7B    NEWSTT   A7AE    NEX      CEDF
+ NEX2     CF00    NEX3     CF45    NEXCHR   CEDB    NEXIT    CEA0
+ NEXTLN   CDC9    NOTCOL   CD25    NUM1     CE98    NUMBER   CE7F
+ NUMCMD   0008    OFFSET   00A5    PATCH    CCDE    PAUSE    CE06
+ PBUFF    CEF6    PEXIT    CF58    POINTB   007C    PREXIT   CF4A
+ PRM      CF4D    PRMESS   CF4B    PRO2     CF2E    PROCES   CEA3
+ PROERR   CF33    PRT      E716    QUITER   CE6C    QUOTE1   CEB9
+ QUOTE2   CEE4    RELOAD   CE30    ROM      CE6E    RUNC     A659
+ S1       CCE3    SA       00B9    SAVA     00A6    SAVER    CE79
+ SAVET    E159    SAVX     00A7    SECOND   FF93    SEND     CD7F
+ SENDCD   CD71    SETMSG   FF90    SP1      CF21    SP2      CF23
+ SPCCHK   0080    SROPEN   F3D5    STACK    0100    START    CCE1
+ STATUS   0090    STOP     FFE1    STXPT    A68E    SUBBUF   CC28
+ SUBCOM   CD64    SUFFIX   CC78    SYMBOC   CC21    SYMBOL   CC19
+ SYNERR   AF08    TALK     FFB4    TEMP     00C3    TKSA     FF96
+ TXTPTR   007A    TXTTAB   002B    UNLSN    FFAE    UNTLK    FFAB
+ VARTAB   002D    VECTR1   CE21    VECTR2   CE21    VECTR3   CE21
+ VECTR4   CE21    VECTR5   CE21    VECTR6   CE78    VECTR7   CD47
+ VECTR8   CD47    VECTR9   CD47    VECTRA   CE7E    VECTRB   CE6B
+ W1       CD03    WEDGE    CCF3    XCLOSE   F642    XECUTE   CD3F
+
+
+END OF ASSEMBLY
+
+CROSS REFERENCE......PAGE    1
+
+
+  ACPTR  $FFA5    89   382   421   423   439
+  BASSFT $E386    75   519   526   541
+  BODY   $CDEA   439   451   454   458
+  BRKT1  $CEF0   647   652
+  BRKT2  $CEF2   650   653
+  BUFFER $CC27   148   267   269   315   321   357   570   576   656   691
+
+                 761
+  CHKSUB $CD4D   313   319
+  CHRCPY $E3AB    76   536
+  CHREXT $008A    46   251
+  CHRGET $0073    41   600   616   640   662   666   709
+  CHRGOT $0079    42   390   468   589   624   706
+  CIOUT  $FFA8    85   358
+  COMMD  $CD48   309   749   750   751
+  COMMON $CD1A   224   230   244
+  CURSYM $CC7A   171   256   485   500   512
+  DEVICE $CC77   163   201   271   572   581   587
+  DIRECT $CDB2   323   409
+  DIROFF $CE17   426   441   448   465
+  DISBLK $CEAE   602   605
+  DISKCD $CD5A   314   321
+* DOSWDG $CC00    98
+  EAL    $00AE    58   504   506
+  EEXIT  $CDAF   364   390
+  ERR1   $CD9C   382   386
+  ERR2   $CDA9   384   388
+  ERROR  $CD90   310   376   558
+  F1     $CD12   237   240
+  FA     $00BA    61   200   272   350   376   412
+  FIND   $CD0E   228   234
+  FINLIN $CE0D   443   460
+  FIXBLK $CF3A   603   641   644   703
+  FNADR  $00BB    62   268   270   337   339
+  FNLEN  $00B7    59   335   360   420   428   569   703
+  FOUND  $CD28   238   255
+  GETIN  $FFE4    92   450   456
+  HIHVEC $CC03   102   286
+  LERR1  $CE5B   502   514   519
+  LERR2  $CE5E   517   521
+  LERR3  $CE69   498   526
+  LINPRT $BDCD    73   434
+  LISTEN $FFB1    83   351
+  LNKPRG $A533    68   510
+  LOAD   $FFD5    93   497
+  LOADER $CE22   482   743   744   745   746   747
+  LOWVEC $CC0E   116   288
+  MANAGE $CC7B   175   723
+  NEWSTT $A7AE    71   524
+  NEX    $CEDF   627   640   660
+  NEX2   $CF00   654   662
+  NEX3   $CF45   709   710
+  NEXCHR $CEDB   614   636
+  NEXIT  $CEA0   574   579   589
+  NEXTLN $CDC9   420   430   463
+  NOTCOL $CD25   247   251
+  NUM1   $CE98   583   585
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    2
+
+
+  NUMBER $CE7F   569   752
+  NUMCMD $0008   235   312   757
+  OFFSET $00A5    50   255   266
+  PATCH  $CCDE   185   195
+  PAUSE  $CE06   456   457
+  PBUFF  $CEF6   656   697
+  PEXIT  $CF58   724   729
+  POINTB $007C    44   196   537   606   700   705
+  PREXIT $CF4A   707   712
+  PRM    $CF4D   723   727
+  PRMESS $CF4B   202   721
+  PRO2   $CF2E   689   696
+  PROCES $CEA3   257   599
+  PROERR $CF33   631   663   667   670   673   699
+  PRT    $E716    77   385   388   437   445   461   467   725
+  QUITER $CE6C   535   753
+  QUOTE1 $CEB9   613   617
+  QUOTE2 $CEE4   634   643
+  RELOAD $CE30   487   493
+  ROM    $CE6E   536   539
+  RUNC   $A659    69   509
+  S1     $CCE3   195   198
+  SA     $00B9    60   353   379   410   414   495
+  SAVA   $00A6    51   216   234   244
+  SAVER  $CE79   557   748
+  SAVET  $E159    74   557
+  SAVX   $00A7    52   217   245
+  SECOND $FF93    84   354
+  SEND   $CD7F   357   361
+  SENDCD $CD71   325   350
+  SETMSG $FF90    94   522
+  SP1    $CF21   677   685
+  SP2    $CF23   687   694
+  SPCCHK $0080    45   249
+  SROPEN $F3D5    78   411
+  STACK  $0100    64   220   226
+  START  $CCE1    98   194
+  STATUS $0090    57   417   425   440
+  STOP   $FFE1    91   447
+  STXPT  $A68E    70   523
+  SUBBUF $CC28   336   338   761
+  SUBCOM $CD64   316   335
+  SUFFIX $CC78   167   657   665   675   696
+  SYMBOC $CC21   138   757
+  SYMBOL $CC19   130   237   313   757
+  SYNERR $AF08    72   701
+  TALK   $FFB4    87   377   413
+  TEMP   $00C3    53   422   424   432   433
+  TKSA   $FF96    88   380   415
+  TXTPTR $007A    43   607   609   620   622   630
+  TXTTAB $002B    36   482   483
+  UNLSN  $FFAE    86   363
+  UNTLK  $FFAB    90   389
+  VARTAB $002D    37   505   507
+  VECTR1 $CE21   102   116   743
+  VECTR2 $CE21   103   117   744
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    3
+
+
+  VECTR3 $CE21   104   118   745
+  VECTR4 $CE21   105   119   746
+  VECTR5 $CE21   106   120   747
+  VECTR6 $CE78   107   121   748
+  VECTR7 $CD47   108   122   749
+  VECTR8 $CD47   109   123   750
+  VECTR9 $CD47   110   124   751
+  VECTRA $CE7E   111   125   752
+  VECTRB $CE6B   112   126   753
+  W1     $CD03   222   226
+  WEDGE  $CCF3   185   216
+  XCLOSE $F642    79   465
+  XECUTE $CD3F   286   340
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

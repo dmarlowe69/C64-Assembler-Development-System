@@ -1,0 +1,14 @@
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Monitor64\monitor$8000tass>64tass 8mon8.asm -L 8mon8.lst -o 8mon8.prg  
+64tass Turbo Assembler Macro V1.53.1515
+64TASS comes with ABSOLUTELY NO WARRANTY; This is free software, and you
+are welcome to redistribute it under certain conditions; See LICENSE!
+
+Assembling file:   8mon8.asm
+Assembling file:   mon8.asm
+Error messages:    None
+Warning messages:  None
+Passes:            3
+Memory range:      $8000-$8fff   $1000
+
+C:\Users\denton\Desktop\Distribution\MADS 64 Monitor64\monitor$8000tass>rem pause 

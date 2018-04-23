@@ -1,0 +1,23 @@
+> Loaded project 'C:\Users\denton\Documents\CBMStudio 64\Boot All\Boot All.cbmprj' Target:C64
+> 
+> 
+> *** Build Started at 10:39 AM ***
+> Saved - C:\Users\denton\Documents\CBMStudio 64\Boot All\Boot All.bas
+> Saved Project 'C:\Users\denton\Documents\CBMStudio 64\Boot All\Boot All.cbmprj'
+> Generation started
+> Program stats
+> Start Address $0801 (2049)
+> End Address   $088F (2191)
+> Size          $008E (142) bytes
+> 
+> 
+> *** Build Started at 10:39 AM ***
+> Saved Project 'C:\Users\denton\Documents\CBMStudio 64\Boot All\Boot All.cbmprj'
+> Generation started
+> *** Build Finished ***
+> Build time : 00:00:00.1248002
+> Generation finished
+> Program stats
+> Start Address $0801 (2049)
+> End Address   $088F (2191)
+> Size          $008E (142) bytes

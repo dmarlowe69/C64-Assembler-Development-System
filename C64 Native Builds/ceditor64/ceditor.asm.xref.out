@@ -1,0 +1,1851 @@
+CEDITOR.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00003  0000              ;*********************************
+00004  0000              *=$C000                ;SYS49152
+00005  C000              ;*********************************
+00006  C000              ;
+00007  C000              ;         EDITOR6464
+00008  C000              ;      EDITOR.C64 V072882
+00009  C000              ; EDITOR FOR ASSEMBLER SOURCE FILES
+00010  C000              ;       BASIC V2 EXTENSION
+00011  C000              ; (C) 1982 BY COMMODORE MACHINES
+00012  C000              ;
+00013  C000              ;  DOCUMENTED BY DENTON MARLOWE
+00014  C000              ;********************************
+00015  C000              ; MAIN BODY OF CODE
+00016  C000              ;*********************************
+00017  C000              .FIL   EDITOR64.ASM
+00018  C000              ;*********************************
+00019  C000              ;
+00020  C000              ;         EDITOR6464
+00021  C000              ;      EDITOR.C64 V072882
+00022  C000              ; EDITOR FOR ASSEMBLER SOURCE FILES
+00023  C000              ;       BASIC V2 EXTENSION
+00024  C000              ; (C) 1982 BY COMMODORE MACHINES
+00025  C000              ;
+00026  C000              ;  DOCUMENTED BY DENTON MARLOWE
+00027  C000              ;********************************
+00028  C000              ; EXTERNAL ADDRESS EQUATES
+00029  C000              ;********************************
+00030  C000              ; ZERO PAGE
+00031  C000              ;********************************
+00032  C000              LINNUM = $14           ;INTEGER LINE NUMBER VALUE
+
+00033  C000              INDEX  = $22           ;BASIC TEMPORAY STORAGE
+00034  C000              TXTTAB = $2B           ;START OF BASIC RAM AREA
+00035  C000              VARTAB = $2D           ;START OF BASIC VARABLE AR
+EA
+00036  C000              EXTTAB = $5F           ;APPLICATION COPY OF VARTA
+B
+00037  C000              OLDLIN = $3B           ;PREVIOUS BASIC LINE NUMBE
+R
+00038  C000              INPPTR = $43           ;POINTER TO SOURCE OF GET,
+READ OR INPUT
+00039  C000              TXTPTR = $7A           ;POINTER TO CHAR IN CHARGE
+T ROUTINE
+00040  C000              CHRMOD = $8A           ;HOOK LOCATION INTO CHRGET
+
+00041  C000              FNADR  = $BB           ;POINTER TO FILENAME
+00042  C000              ;********************************
+00043  C000              ; PAGE ZERO EQUATES
+00044  C000              ;********************************
+00045  C000              STATUS = $90           ;KERNAL I/O STATUS
+00046  C000              FNLEN  = $B7           ;LENGTH OF FILENAME
+00047  C000              ;********************************
+00048  C000              ; BASIC EQUATES
+00049  C000              ;********************************
+00050  C000              STACK  = $0100
+00051  C000              ;********************************
+00052  C000              ; BASIC EQUATES
+00053  C000              ;********************************
+00054  C000              BASBUF=$0200
+00055  C000              ;********************************
+00056  C000              ; BASIC EQUATES
+00057  C000              ;********************************
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0003
+
+LINE# LOC   CODE        LINE
+
+
+00058  C000              READY  = $A474         ; VIC20 = $C474
+00059  C000              CHRLOP = $A48D         ; VIC20 = $C48D
+00060  C000              INDEL  = $A4A2         ; VIC20 = $C4A2
+00061  C000              MAINE  = $A52A         ; VIC20 = $C52A
+00062  C000              LINKPG = $A533         ; VIC20 = $C533
+00063  C000              FNDLIN = $A613         ; VIC20 = $C613
+00064  C000              CLRENT = $A659         ; VIC20 = $C659
+00065  C000              LINGET = $A96B         ; VIC20 = $C96B
+00066  C000              PRINTE = $AAD7         ; VIC20 = $CAD7
+00067  C000              ANDORE = $AEFD         ; VIC20 = $CEFD
+00068  C000              SYTERR = $AF08         ; VIC20 = $CF08
+00069  C000              SGNENT = $BC49         ; VIC20 = $DC49
+00070  C000              LINPRT = $BDCD         ; VIC20 = $DDCD
+00071  C000              FOUT   = $BDDD         ; VIC20 = $DDDD
+00072  C000              ;********************************
+00073  C000              ; KERNAL EQUATES
+00074  C000              ;********************************
+00075  C000              LSVPAR = $E1E6         ; VIC20 = $E1F3
+00076  C000              CKCOMA = $E20E         ; VIC20 = $E20B
+00077  C000              EDNAME = $E257         ; VIC20 = $E254
+00078  C000              ;********************************
+00079  C000              ; KERNAL EQUATES
+00080  C000              ;********************************
+00081  C000              SETLFS = $FFBA
+00082  C000              SETNAM = $FFBD
+00083  C000              OPEN   = $FFC0
+00084  C000              CLOSE  = $FFC3
+00085  C000              CHKIN  = $FFC6
+00086  C000              CHKOUT = $FFC9
+00087  C000              CLRCHN = $FFCC
+00088  C000              CHRIN  = $FFCF
+00089  C000              CHROUT = $FFD2
+00090  C000              GETIN  = $FFE4
+00091  C000              SETTMO = $FFA2
+00092  C000              ;********************************
+00093  C000              ; EDITOR20 ENTRY POINT
+00094  C000              ;********************************
+00095  C000              EDITOR =*
+00096  C000              ;********************************
+00097  C000              ; SET BASIC LAST LINE EXECUTED TO ZERO
+00098  C000              ;********************************
+00099  C000  A9 00              LDA #$00        ;NULL
+00100  C002  85 3B              STA OLDLIN      ;$3B
+00101  C004  85 3C              STA OLDLIN+1    ;$3C
+00102  C006              ;********************************
+00103  C006              ; DISPLAY STARTUP BANNER
+00104  C006              ;********************************
+00105  C006  A2 00              LDX #$00        ;ZERO OFFSET INTO TEXT
+00106  C008  20 7E C5           JSR PRTXT       ;PRINT STARTUP MESSAGE
+00107  C00B              ;********************************
+00108  C00B              ; MODIFIY END OF CHRGET ROUTINE
+00109  C00B              ; TO POINT TO EDITOR64 HANDLER
+00110  C00B              ; AND ON KILL RESET TO DEFAULT
+00111  C00B              ;********************************
+00112  C00B                                     ;LDA #$4C      ;'L'
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0004
+
+LINE# LOC   CODE        LINE
+
+
+00113  C00B                                     ;BIT $60A9
+00114  C00B  A9          XXCC0B .BYTE $A9       ; LDA #$4C
+00115  C00C  4C          XXCC0C .BYTE $4C
+00116  C00D  2C          XXCC0D .BYTE $2C
+00117  C00E  A9          KILL   .BYTE $A9       ; LDA #$60
+00118  C00F  60          XXCC0F .BYTE $60
+00119  C010              ;
+00120  C010  85 8A              STA CHRMOD
+00121  C012  A9 2C              LDA #<XXC02C    ;#$2C
+00122  C014  85 8B              STA CHRMOD+1
+00123  C016  A9 C0              LDA #>XXC02C    ;$C0
+00124  C018  85 8C              STA CHRMOD+2
+00125  C01A  4C 29 C3           JMP XXC329
+00126  C01D              ;********************************
+00127  C01D              ; SAVE REGISTERS
+00128  C01D              ;********************************
+00129  C01D  8D 41 C6    SAVREG STA SAVA
+00130  C020  08                 PHP 
+00131  C021  68                 PLA 
+00132  C022  8D 42 C6           STA SAVP
+00133  C025  8E 43 C6           STX SAVX
+00134  C028  8C 44 C6           STY SAVY
+00135  C02B  60                 RTS 
+00136  C02C              ;********************************
+00137  C02C              ; CHECK CALLING LOOP - DIRECT MODE ONLY
+00138  C02C              ; VIC = $C48D-1 C64 = $A48D-1
+00139  C02C              ;********************************
+00140  C02C  20 1D C0    XXC02C JSR SAVREG
+00141  C02F  BA                 TSX 
+00142  C030  BD 01 01           LDA STACK+1,X
+00143  C033  C9 8C              CMP #<CHRLOP-1  ;#$8C
+00144  C035  D0 07              BNE XXC03E
+00145  C037  BD 02 01           LDA STACK+2,X
+00146  C03A  C9 A4              CMP #>CHRLOP    ;#$A4
+00147  C03C  F0 0F              BEQ XXC04D
+00148  C03E              ;********************************
+00149  C03E              ; RESTORE REGISTERS
+00150  C03E              ;********************************
+00151  C03E  AC 44 C6    XXC03E LDY SAVY
+00152  C041  AE 43 C6           LDX SAVX
+00153  C044  AD 42 C6           LDA SAVP
+00154  C047  48                 PHA
+00155  C048  AD 41 C6           LDA SAVA
+00156  C04B  28                 PLP
+00157  C04C  60                 RTS
+00158  C04D              ;********************************
+00159  C04D              ;
+00160  C04D              ;********************************
+00161  C04D  AD 42 C6    XXC04D LDA SAVP
+00162  C050  4A                 LSR A
+00163  C051  90 4D              BCC XXC0A0
+00164  C053  A2 00              LDX #$00
+00165  C055  8E 3F C6           STX XXC63F
+00166  C058  CA                 DEX 
+00167  C059  E8                 INX 
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0005
+
+LINE# LOC   CODE        LINE
+
+
+00168  C05A  A4 7A       XXC05A LDY TXTPTR
+00169  C05C  B9 00 02    XXC05C LDA BASBUF,Y
+00170  C05F  38                 SEC 
+00171  C060  FD A4 C5           SBC CMDTAB,X
+00172  C063  F0 14              BEQ XXC079
+00173  C065  C9 80              CMP #$80
+00174  C067  F0 14              BEQ XXC07D
+00175  C069  EE 3F C6           INC XXC63F
+00176  C06C  E8          XXC06C INX 
+00177  C06D  BD A3 C5           LDA CMDTAB-1,X
+00178  C070  10 FA              BPL XXC06C
+00179  C072  BD A4 C5           LDA CMDTAB,X
+00180  C075  D0 E3              BNE XXC05A
+00181  C077  F0 C5              BEQ XXC03E
+00182  C079  E8          XXC079 INX 
+00183  C07A  C8                 INY 
+00184  C07B  D0 DF              BNE XXC05C
+00185  C07D  84 7A       XXC07D STY TXTPTR
+00186  C07F  AD 3F C6           LDA XXC63F
+00187  C082  0A                 ASL A
+00188  C083  AA                 TAX 
+00189  C084  BD D4 C5           LDA VECTOR+1,X
+00190  C087  48                 PHA 
+00191  C088  BD D3 C5           LDA VECTOR,X
+00192  C08B  48                 PHA 
+00193  C08C  20 3E C0           JSR XXC03E
+00194  C08F  4C 73 00           JMP $0073
+00195  C092              ;********************************
+00196  C092              ;
+00197  C092              ;********************************
+00198  C092  20 6B A9    AUTO   JSR LINGET
+00199  C095  A5 14              LDA LINNUM
+00200  C097  85 3B              STA OLDLIN
+00201  C099  A5 15              LDA LINNUM+1
+00202  C09B  85 3C              STA OLDLIN+1
+00203  C09D  4C 29 C3           JMP XXC329
+00204  C0A0              ;********************************
+00205  C0A0              ;
+00206  C0A0              ;********************************
+00207  C0A0  68          XXC0A0 PLA 
+00208  C0A1  68                 PLA 
+00209  C0A2  20 3E C0           JSR XXC03E
+00210  C0A5  20 6B A9           JSR LINGET
+00211  C0A8  F0 37              BEQ XXC0E1
+00212  C0AA  A5 3B              LDA OLDLIN
+00213  C0AC  05 3C              ORA OLDLIN+1
+00214  C0AE  F0 31              BEQ XXC0E1
+00215  C0B0  A5 14              LDA LINNUM
+00216  C0B2  18                 CLC 
+00217  C0B3  65 3B              ADC OLDLIN
+00218  C0B5  85 63              STA $63
+00219  C0B7  A5 15              LDA LINNUM+1
+00220  C0B9  65 3C              ADC OLDLIN+1
+00221  C0BB  85 62              STA $62
+00222  C0BD  A2 90              LDX #$90
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0006
+
+LINE# LOC   CODE        LINE
+
+
+00223  C0BF  38                 SEC 
+00224  C0C0  20 49 BC           JSR SGNENT
+00225  C0C3  20 DD BD           JSR FOUT
+00226  C0C6  A2 00              LDX #$00
+00227  C0C8  A9 20              LDA #$20        ;' '
+00228  C0CA  9D 77 02           STA $0277,X
+00229  C0CD  E8                 INX 
+00230  C0CE  BD 00 01    XXC0CE LDA $0100,X
+00231  C0D1  F0 06              BEQ XXC0D9
+00232  C0D3  9D 77 02           STA $0277,X
+00233  C0D6  E8                 INX 
+00234  C0D7  D0 F5              BNE XXC0CE
+00235  C0D9  A9 20       XXC0D9 LDA #$20        ;' '
+00236  C0DB  9D 77 02           STA $0277,X
+00237  C0DE  E8                 INX 
+00238  C0DF  86 C6              STX $C6
+00239  C0E1  20 0B C2    XXC0E1 JSR XXC20B
+00240  C0E4  4C A2 A4           JMP INDEL       ; VIC  $C4A2 C64 = $A4A2
+00241  C0E7              ;********************************
+00242  C0E7              ;
+00243  C0E7              ;********************************
+00244  C0E7  F0 42       NUMBER BEQ XXC12B
+00245  C0E9  20 6B A9           JSR LINGET
+00246  C0EC  20 13 A6           JSR FNDLIN
+00247  C0EF  20 FD AE           JSR ANDORE
+00248  C0F2  20 6B A9           JSR LINGET
+00249  C0F5  A5 14              LDA LINNUM
+00250  C0F7  85 BB              STA FNADR
+00251  C0F9  A5 15              LDA LINNUM+1
+00252  C0FB  85 BC              STA FNADR+1
+00253  C0FD  20 FD AE           JSR ANDORE
+00254  C100  20 6B A9           JSR LINGET
+00255  C103  20 CA C2    XXC103 JSR XXC2CA
+00256  C106  F0 20              BEQ XXC128
+00257  C108  20 C0 C2           JSR XXC2C0
+00258  C10B  18                 CLC 
+00259  C10C  A5 BB              LDA FNADR
+00260  C10E  20 BC C2           JSR XXC2BC
+00261  C111  65 14              ADC LINNUM
+00262  C113  85 BB              STA FNADR
+00263  C115  A5 BC              LDA FNADR+1
+00264  C117  20 BC C2           JSR XXC2BC
+00265  C11A  65 15              ADC LINNUM+1
+00266  C11C  85 BC              STA FNADR+1
+00267  C11E  20 CA C2    XXC11E JSR XXC2CA
+00268  C121  D0 FB              BNE XXC11E
+00269  C123  20 C0 C2           JSR XXC2C0
+00270  C126  D0 DB              BNE XXC103
+00271  C128  4C 29 C3    XXC128 JMP XXC329
+00272  C12B              ;********************************
+00273  C12B              ;
+00274  C12B              ;********************************
+00275  C12B  20 D7 AA    XXC12B JSR PRINTE
+00276  C12E  20 D2 C2           JSR SETXAB
+00277  C131              ; SET POINTER TO FILE NAME
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0007
+
+LINE# LOC   CODE        LINE
+
+
+00278  C131  A9 E8              LDA #$E8
+00279  C133  85 BB              STA FNADR
+00280  C135  A9 03              LDA #$03
+00281  C137  85 BC              STA FNADR+1
+00282  C139              ;********************************
+00283  C139              ;SET CURRENT LINE TO 10 
+00284  C139              ;********************************
+00285  C139  A9 0A              LDA #$0A
+00286  C13B  85 14              STA LINNUM
+00287  C13D  A9 00              LDA #$00
+00288  C13F  85 15              STA LINNUM+1
+00289  C141  4C 03 C1           JMP XXC103
+00290  C144              ;********************************
+00291  C144              ; LOAD SOURCE FILE AS TEXT
+00292  C144              ;********************************
+00293  C144  20 9A C2    GET    JSR GETFIL
+00294  C147  20 C6 FF           JSR CHKIN
+00295  C14A  A5 90              LDA STATUS
+00296  C14C  F0 03              BEQ XXC151
+00297  C14E  4C 94 C5           JMP PFILER
+00298  C151              ;********************************
+00299  C151              ; LOAD SOURCE FILE AS TEXT
+00300  C151              ;********************************
+00301  C151  A9 01       XXC151 LDA #$01
+00302  C153  20 B6 C2           JSR XXC2B6
+00303  C156  20 CF FF    XXC156 JSR CHRIN
+00304  C159  C9 0D              CMP #$0D
+00305  C15B  F0 09              BEQ XXC166
+00306  C15D  20 BC C2           JSR XXC2BC
+00307  C160  A5 90              LDA STATUS
+00308  C162  D0 20              BNE XXC184
+00309  C164  F0 F0              BEQ XXC156
+00310  C166  20 9E C1    XXC166 JSR XXC19E
+00311  C169  20 CD C2           JSR XXC2CD
+00312  C16C  C9 01              CMP #$01
+00313  C16E  D0 08              BNE XXC178
+00314  C170  20 9E C1           JSR XXC19E
+00315  C173  20 9B C1           JSR XXC19B
+00316  C176  D0 08              BNE XXC180
+00317  C178  20 C0 C2    XXC178 JSR XXC2C0
+00318  C17B  A9 00              LDA #$00
+00319  C17D  20 BC C2           JSR XXC2BC
+00320  C180  A5 90       XXC180 LDA STATUS
+00321  C182  F0 CD              BEQ XXC151
+00322  C184  98          XXC184 TYA 
+00323  C185  20 B6 C2           JSR XXC2B6
+00324  C188  A5 5F              LDA EXTTAB
+00325  C18A  85 2D              STA VARTAB
+00326  C18C  A5 60              LDA EXTTAB+1
+00327  C18E  85 2E              STA VARTAB+1
+00328  C190  20 CC FF           JSR CLRCHN
+00329  C193  A9 08              LDA #$08
+00330  C195  20 C3 FF           JSR CLOSE
+00331  C198  4C 2B C1           JMP XXC12B
+00332  C19B              ;********************************
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0008
+
+LINE# LOC   CODE        LINE
+
+
+00333  C19B              ;
+00334  C19B              ;********************************
+00335  C19B  20 9E C1    XXC19B JSR XXC19E
+00336  C19E  A5 5F       XXC19E LDA EXTTAB
+00337  C1A0  D0 02              BNE XXC1A4
+00338  C1A2  C6 60              DEC EXTTAB+1
+00339  C1A4  C6 5F       XXC1A4 DEC EXTTAB
+00340  C1A6  60                 RTS 
+00341  C1A7              ;********************************
+00342  C1A7              ; PUT/CPUT 
+00343  C1A7              ; SAVE A FILE OR PART OF A FILE
+00344  C1A7              ; TO FLOPPY DISK
+00345  C1A7              ;********************************
+00346  C1A7  A2 00       CPUT   LDX #$00
+00347  C1A9  2C                 .BYTE $2C
+00348  C1AA  A2 FF       PUT    LDX #$FF
+00349  C1AC              ;
+00350  C1AC  8E 45 C6           STX FILEXT
+00351  C1AF  20 4F C2           JSR XXC24F
+00352  C1B2              ;
+00353  C1B2  20 C9 FF           JSR CHKOUT
+00354  C1B5  A5 90              LDA STATUS
+00355  C1B7  F0 12              BEQ XXC1CB
+00356  C1B9  4C 94 C5           JMP PFILER
+00357  C1BC              ;********************************
+00358  C1BC              ;
+00359  C1BC              ;********************************
+00360  C1BC  A9 0D       XXC1BC LDA #$0D
+00361  C1BE  20 D2 FF           JSR CHROUT
+00362  C1C1  A5 90              LDA STATUS
+00363  C1C3  F0 03              BEQ XXC1C8
+00364  C1C5  4C 94 C5           JMP PFILER
+00365  C1C8              ;********************************
+00366  C1C8              ;
+00367  C1C8              ;********************************
+00368  C1C8  20 C0 C2    XXC1C8 JSR XXC2C0
+00369  C1CB  20 CA C2    XXC1CB JSR XXC2CA
+00370  C1CE  F0 08              BEQ XXC1D8
+00371  C1D0  AE 45 C6           LDX FILEXT
+00372  C1D3  20 81 C4           JSR XXC481
+00373  C1D6  B0 0F              BCS XXC1E7
+00374  C1D8  20 CC FF    XXC1D8 JSR CLRCHN
+00375  C1DB  A9 08              LDA #$08
+00376  C1DD  20 C3 FF           JSR CLOSE
+00377  C1E0  4C 29 C3           JMP XXC329
+00378  C1E3              ;********************************
+00379  C1E3              ;
+00380  C1E3              ;********************************
+00381  C1E3  98          XXC1E3 TYA 
+00382  C1E4  20 D2 FF           JSR CHROUT
+00383  C1E7  20 CA C2    XXC1E7 JSR XXC2CA
+00384  C1EA  A8                 TAY 
+00385  C1EB  F0 CF              BEQ XXC1BC
+00386  C1ED  C9 20              CMP #$20        ;' '
+00387  C1EF  D0 08              BNE XXC1F9
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0009
+
+LINE# LOC   CODE        LINE
+
+
+00388  C1F1  8A                 TXA 
+00389  C1F2  30 EF              BMI XXC1E3
+00390  C1F4  D0 F1              BNE XXC1E7
+00391  C1F6  E8                 INX 
+00392  C1F7  D0 EA              BNE XXC1E3
+00393  C1F9  C9 3B       XXC1F9 CMP #OLDLIN      ;';'
+00394  C1FB  F0 04              BEQ XXC201
+00395  C1FD  C9 27              CMP #$27        ;'''
+00396  C1FF  D0 02              BNE XXC203
+00397  C201  A2 FF       XXC201 LDX #$FF
+00398  C203  8A          XXC203 TXA 
+00399  C204  30 DD              BMI XXC1E3
+00400  C206  AE 45 C6           LDX FILEXT
+00401  C209  F0 D8              BEQ XXC1E3
+00402  C20B  A2 FF       XXC20B LDX #$FF
+00403  C20D  A0 00              LDY #$00
+00404  C20F  E8          XXC20F INX 
+00405  C210  BD 00 02           LDA BASBUF,X
+00406  C213  C9 20              CMP #$20        ;' '
+00407  C215  F0 F8              BEQ XXC20F
+00408  C217              ;********************************
+00409  C217              ;
+00410  C217              ;********************************
+00411  C217  24                 .BYTE $24
+00412  C218              ;********************************
+00413  C218              ;
+00414  C218              ;********************************
+00415  C218  E8          XXC218 INX 
+00416  C219  BD 00 02           LDA BASBUF,X
+00417  C21C  C9 30              CMP #$30        ;'0'
+00418  C21E  90 04              BCC XXC224
+00419  C220  C9 3A              CMP #$3A        ;':'
+00420  C222  90 F4              BCC XXC218
+00421  C224  BD 00 02    XXC224 LDA BASBUF,X
+00422  C227  C9 20              CMP #$20        ;' '
+00423  C229  D0 01              BNE XXC22C
+00424  C22B  E8                 INX 
+00425  C22C  BD 00 02    XXC22C LDA BASBUF,X
+00426  C22F  F0 09              BEQ XXC23A
+00427  C231  29 7F              AND #$7F
+00428  C233  99 00 02           STA BASBUF,Y
+00429  C236  E8                 INX 
+00430  C237  C8                 INY 
+00431  C238  D0 F2              BNE XXC22C
+00432  C23A  99 00 02    XXC23A STA BASBUF,Y
+00433  C23D  C8                 INY 
+00434  C23E  C8                 INY 
+00435  C23F  99 00 02           STA BASBUF,Y
+00436  C242  C8                 INY 
+00437  C243  C8                 INY 
+00438  C244  C8                 INY 
+00439  C245  60                 RTS 
+00440  C246              ;********************************
+00441  C246              ; READ IN FILENAME
+00442  C246              ;********************************
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0010
+
+LINE# LOC   CODE        LINE
+
+
+00443  C246  A2 00       GETNAM LDX #$00 
+00444  C248  86 90              STX STATUS
+00445  C24A  86 B7              STX FNLEN
+00446  C24C              ;
+00447  C24C  4C 57 E2           JMP EDNAME      ;VIC = $E254 C64 = $E257
+00448  C24F              ;********************************
+00449  C24F              ; OPEN SOURCE FILE OF FLOPPY DISK
+00450  C24F              ;********************************
+00451  C24F  20 46 C2    XXC24F JSR GETNAM
+00452  C252  A0 00              LDY #$00
+00453  C254  B1 BB       XXC254 LDA (FNADR),Y
+00454  C256  91 2D              STA (VARTAB),Y
+00455  C258  C8                 INY 
+00456  C259  C4 B7              CPY FNLEN
+00457  C25B  D0 F7              BNE XXC254
+00458  C25D  A2 04              LDX #$04
+00459  C25F  BD 45 C6    XXC25F LDA FILEXT,X
+00460  C262  91 2D              STA (VARTAB),Y
+00461  C264  C8                 INY 
+00462  C265  CA                 DEX 
+00463  C266  D0 F7              BNE XXC25F
+00464  C268  84 B7              STY FNLEN
+00465  C26A  20 79 00           JSR $0079
+00466  C26D  F0 03              BEQ XXC272
+00467  C26F  20 0E E2           JSR CKCOMA
+00468  C272  20 52 C4    XXC272 JSR XXC452
+00469  C275              ;********************************
+00470  C275              ; 
+00471  C275              ;********************************
+00472  C275  20 E6 E1    OPNAM  JSR LSVPAR
+00473  C278              ;
+00474  C278  A9 08              LDA #$08
+00475  C27A  A8                 TAY 
+00476  C27B  A6 BA              LDX $BA
+00477  C27D  20 BA FF           JSR SETLFS
+00478  C280              ;
+00479  C280  A5 B7              LDA FNLEN
+00480  C282  A6 2D              LDX VARTAB
+00481  C284  A4 2E              LDY VARTAB+1
+00482  C286  20 BD FF           JSR SETNAM
+00483  C289              ;
+00484  C289  20 C0 FF           JSR OPEN
+00485  C28C  A5 90              LDA STATUS
+00486  C28E  F0 07              BEQ FILOK
+00487  C290  C9 40              CMP #$40        ;'@'
+00488  C292  F0 03              BEQ FILOK
+00489  C294  4C 94 C5           JMP PFILER
+00490  C297              ;********************************
+00491  C297              ; LOAD X WITH FILE NUMBER
+00492  C297              ;********************************
+00493  C297  A2 08       FILOK  LDX #$08
+00494  C299  60                 RTS 
+00495  C29A              ;********************************
+00496  C29A              ; PARSE IN GET FILE COMMAND LINE
+00497  C29A              ;********************************
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0011
+
+LINE# LOC   CODE        LINE
+
+
+00498  C29A  20 46 C2    GETFIL JSR GETNAM
+00499  C29D  20 79 00           JSR $0079
+00500  C2A0  F0 03              BEQ XXC2A5
+00501  C2A2  20 0E E2           JSR CKCOMA
+00502  C2A5  20 6B A9    XXC2A5 JSR LINGET
+00503  C2A8  20 13 A6           JSR FNDLIN
+00504  C2AB  A5 BB              LDA FNADR
+00505  C2AD  A4 BC              LDY FNADR+1
+00506  C2AF  85 2D              STA VARTAB
+00507  C2B1  84 2E              STY VARTAB+1
+00508  C2B3  4C 75 C2           JMP OPNAM
+00509  C2B6              ;********************************
+00510  C2B6              ;
+00511  C2B6              ;********************************
+00512  C2B6  20 B9 C2    XXC2B6 JSR XXC2B9
+00513  C2B9  20 BC C2    XXC2B9 JSR XXC2BC
+00514  C2BC  A0 00       XXC2BC LDY #$00
+00515  C2BE  91 5F              STA (EXTTAB),Y
+00516  C2C0  E6 5F       XXC2C0 INC EXTTAB
+00517  C2C2  D0 02              BNE XXC2C6
+00518  C2C4  E6 60              INC EXTTAB+1
+00519  C2C6  60          XXC2C6 RTS 
+00520  C2C7              ;********************************
+00521  C2C7              ;
+00522  C2C7              ;********************************
+00523  C2C7  20 CA C2           JSR XXC2CA
+00524  C2CA  20 C0 C2    XXC2CA JSR XXC2C0
+00525  C2CD  A0 00       XXC2CD LDY #$00
+00526  C2CF  B1 5F              LDA (EXTTAB),Y
+00527  C2D1  60                 RTS 
+00528  C2D2              ;********************************
+00529  C2D2              ; LOAD POINTER TO START OF TEXT ARE
+00530  C2D2              ; BY USING POINTER TO START OF BASIC
+00531  C2D2              ;********************************
+00532  C2D2  A5 2B       SETXAB LDA TXTTAB
+00533  C2D4  85 5F              STA EXTTAB
+00534  C2D6  A5 2C              LDA TXTTAB+1
+00535  C2D8  85 60              STA EXTTAB+1
+00536  C2DA  60                 RTS 
+00537  C2DB              ;********************************
+00538  C2DB              ;
+00539  C2DB              ;********************************
+00540  C2DB  4C 08 AF    XXC2DB JMP SYTERR      ; C64 = $AF08
+00541  C2DE              ;********************************
+00542  C2DE              ;
+00543  C2DE              ;********************************
+00544  C2DE  F0 FB       DELETE BEQ XXC2DB
+00545  C2E0  20 52 C4           JSR XXC452
+00546  C2E3  A5 5F              LDA EXTTAB
+00547  C2E5  A6 60              LDX EXTTAB+1
+00548  C2E7  85 24              STA INDEX+2
+00549  C2E9  86 25              STX INDEX+3
+00550  C2EB  20 13 A6           JSR FNDLIN
+00551  C2EE  90 0E              BCC XXC2FE
+00552  C2F0  A0 01              LDY #$01
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0012
+
+LINE# LOC   CODE        LINE
+
+
+00553  C2F2  B1 5F              LDA (EXTTAB),Y
+00554  C2F4  F0 08              BEQ XXC2FE
+00555  C2F6  AA                 TAX 
+00556  C2F7  88                 DEY 
+00557  C2F8  B1 5F              LDA (EXTTAB),Y
+00558  C2FA  85 5F              STA EXTTAB
+00559  C2FC  86 60              STX EXTTAB+1
+00560  C2FE  A5 24       XXC2FE LDA INDEX+2
+00561  C300  38                 SEC 
+00562  C301  E5 5F              SBC EXTTAB
+00563  C303  AA                 TAX 
+00564  C304  A5 25              LDA INDEX+3
+00565  C306  E5 60              SBC EXTTAB+1
+00566  C308  A8                 TAY 
+00567  C309  B0 1E              BCS XXC329
+00568  C30B  8A                 TXA 
+00569  C30C  18                 CLC 
+00570  C30D  65 2D              ADC VARTAB
+00571  C30F  85 2D              STA VARTAB
+00572  C311  98                 TYA 
+00573  C312  65 2E              ADC VARTAB+1
+00574  C314  85 2E              STA VARTAB+1
+00575  C316  A0 00              LDY #$00
+00576  C318  B1 5F       XXC318 LDA (EXTTAB),Y
+00577  C31A  91 24              STA (INDEX+2),Y
+00578  C31C  C8                 INY 
+00579  C31D  D0 F9              BNE XXC318
+00580  C31F  E6 60              INC EXTTAB+1
+00581  C321  E6 25              INC INDEX+3
+00582  C323  A5 2E              LDA VARTAB+1
+00583  C325  C5 25              CMP INDEX+3
+00584  C327  B0 EF              BCS XXC318
+00585  C329              ;********************************
+00586  C329              ;
+00587  C329              ;********************************
+00588  C329  20 33 A5    XXC329 JSR LINKPG
+00589  C32C  A5 22              LDA INDEX
+00590  C32E  A6 23              LDX INDEX+1
+00591  C330  18                 CLC 
+00592  C331  69 02              ADC #$02
+00593  C333  85 2D              STA VARTAB
+00594  C335  90 01              BCC XXC338
+00595  C337  E8                 INX 
+00596  C338  86 2E       XXC338 STX VARTAB+1
+00597  C33A  20 59 A6           JSR CLRENT
+00598  C33D  4C 74 A4           JMP READY
+00599  C340              ;********************************
+00600  C340              ;
+00601  C340              ;********************************
+00602  C340  8D 3F C6    CHANGE STA XXC63F
+00603  C343  A2 00              LDX #$00
+00604  C345  86 33              STX $33
+00605  C347  20 37 C4           JSR XXC437
+00606  C34A  A2 02              LDX #$02
+00607  C34C  86 49              STX $49
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0013
+
+LINE# LOC   CODE        LINE
+
+
+00608  C34E  D0 07              BNE XXC357
+00609  C350  8D 3F C6    FIND   STA XXC63F
+00610  C353  A2 00              LDX #$00
+00611  C355  86 49              STX $49
+00612  C357  20 37 C4    XXC357 JSR XXC437
+00613  C35A  20 73 00           JSR $0073
+00614  C35D  F0 03              BEQ XXC362
+00615  C35F  20 FD AE           JSR ANDORE
+00616  C362  20 52 C4    XXC362 JSR XXC452
+00617  C365  20 D7 AA           JSR PRINTE
+00618  C368  D0 0B              BNE XXC375
+00619  C36A  C8          XXC36A INY 
+00620  C36B  98                 TYA 
+00621  C36C  18                 CLC 
+00622  C36D  65 5F              ADC EXTTAB
+00623  C36F  85 5F              STA EXTTAB
+00624  C371  90 02              BCC XXC375
+00625  C373  E6 60              INC EXTTAB+1
+00626  C375  20 CA C2    XXC375 JSR XXC2CA
+00627  C378  F0 05              BEQ XXC37F
+00628  C37A  20 81 C4           JSR XXC481
+00629  C37D  B0 03              BCS XXC382
+00630  C37F  4C 2A A5    XXC37F JMP MAINE
+00631  C382              ;********************************
+00632  C382              ;
+00633  C382              ;********************************
+00634  C382  8C 40 C6    XXC382 STY XXC640
+00635  C385  EE 40 C6    XXC385 INC XXC640
+00636  C388  AC 40 C6           LDY XXC640
+00637  C38B  A6 31              LDX $31
+00638  C38D  A5 32              LDA $32
+00639  C38F  8D 41 C6           STA SAVA
+00640  C392  B1 5F       XXC392 LDA (EXTTAB),Y
+00641  C394  F0 D4              BEQ XXC36A
+00642  C396  DD 00 02           CMP BASBUF,X
+00643  C399  D0 EA              BNE XXC385
+00644  C39B  E8                 INX 
+00645  C39C  C8                 INY 
+00646  C39D  CE 41 C6           DEC SAVA
+00647  C3A0  D0 F0              BNE XXC392
+00648  C3A2  88                 DEY 
+00649  C3A3  8C 3F C6           STY XXC63F
+00650  C3A6  8C 43 C6           STY SAVX
+00651  C3A9  A5 49              LDA $49
+00652  C3AB  F0 66              BEQ XXC413
+00653  C3AD  20 95 C4           JSR XXC495
+00654  C3B0  A5 34              LDA $34
+00655  C3B2  38                 SEC 
+00656  C3B3  E5 32              SBC $32
+00657  C3B5  8D 42 C6           STA SAVP
+00658  C3B8  F0 2D              BEQ XXC3E7
+00659  C3BA  C8          XXC3BA INY 
+00660  C3BB  F0 C2              BEQ XXC37F
+00661  C3BD  B1 5F              LDA (EXTTAB),Y
+00662  C3BF  D0 F9              BNE XXC3BA
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0014
+
+LINE# LOC   CODE        LINE
+
+
+00663  C3C1  18                 CLC 
+00664  C3C2  98                 TYA 
+00665  C3C3  6D 42 C6           ADC SAVP
+00666  C3C6  C9 02              CMP #$02
+00667  C3C8  90 49              BCC XXC413
+00668  C3CA  C9 4B              CMP #$4B        ;'K'
+00669  C3CC  B0 45              BCS XXC413
+00670  C3CE  AD 42 C6           LDA SAVP
+00671  C3D1  10 03              BPL XXC3D6
+00672  C3D3  CE 41 C6           DEC SAVA
+00673  C3D6  18          XXC3D6 CLC 
+00674  C3D7  6D 3F C6           ADC XXC63F
+00675  C3DA  8D 43 C6           STA SAVX
+00676  C3DD  B0 05              BCS XXC3E4
+00677  C3DF  20 CB C4           JSR XXC4CB
+00678  C3E2  F0 03              BEQ XXC3E7
+00679  C3E4  20 B1 C4    XXC3E4 JSR XXC4B1
+00680  C3E7  AD 43 C6    XXC3E7 LDA SAVX
+00681  C3EA  38                 SEC 
+00682  C3EB  E5 34              SBC $34
+00683  C3ED  A8                 TAY 
+00684  C3EE  C8                 INY 
+00685  C3EF  A5 34              LDA $34
+00686  C3F1  F0 11              BEQ XXC404
+00687  C3F3  8D 44 C6           STA SAVY
+00688  C3F6  A6 33              LDX $33
+00689  C3F8  BD 00 02    XXC3F8 LDA BASBUF,X
+00690  C3FB  91 5F              STA (EXTTAB),Y
+00691  C3FD  E8                 INX 
+00692  C3FE  C8                 INY 
+00693  C3FF  CE 44 C6           DEC SAVY
+00694  C402  D0 F4              BNE XXC3F8
+00695  C404  18          XXC404 CLC 
+00696  C405  A5 2D              LDA VARTAB
+00697  C407  6D 42 C6           ADC SAVP
+00698  C40A  85 2D              STA VARTAB
+00699  C40C  A5 2E              LDA VARTAB+1
+00700  C40E  6D 41 C6           ADC SAVA
+00701  C411  85 2E              STA VARTAB+1
+00702  C413  A6 43       XXC413 LDX INPPTR
+00703  C415  A5 44              LDA INPPTR+1
+00704  C417  20 CD BD           JSR LINPRT
+00705  C41A  A0 00              LDY #$00
+00706  C41C  A9 20              LDA #$20        ;' '
+00707  C41E  20 D2 FF    XXC41E JSR CHROUT
+00708  C421  C8                 INY 
+00709  C422  D0 03              BNE XXC427
+00710  C424  4C 2A A5           JMP MAINE
+00711  C427              ;********************************
+00712  C427              ;
+00713  C427              ;********************************
+00714  C427  B1 5F       XXC427 LDA (EXTTAB),Y
+00715  C429  D0 F3              BNE XXC41E
+00716  C42B  20 D7 AA           JSR PRINTE
+00717  C42E  20 5A C5           JSR XXC55A
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0015
+
+LINE# LOC   CODE        LINE
+
+
+00718  C431  AC 43 C6           LDY SAVX
+00719  C434  4C 82 C3           JMP XXC382
+00720  C437              ;********************************
+00721  C437              ;
+00722  C437              ;********************************
+00723  C437  A4 7A       XXC437 LDY TXTPTR
+00724  C439  C8                 INY 
+00725  C43A  94 31              STY $31,X
+00726  C43C  A9 00              LDA #$00
+00727  C43E  95 32              STA $32,X
+00728  C440  B9 00 02    XXC440 LDA BASBUF,Y
+00729  C443  F0 15              BEQ XXC45A
+00730  C445  CD 3F C6           CMP XXC63F
+00731  C448  F0 05              BEQ XXC44F
+00732  C44A  F6 32              INC $32,X
+00733  C44C  C8                 INY 
+00734  C44D  D0 F1              BNE XXC440
+00735  C44F  84 7A       XXC44F STY TXTPTR
+00736  C451  60                 RTS 
+00737  C452              ;********************************
+00738  C452              ;
+00739  C452              ;********************************
+00740  C452  90 09       XXC452 BCC XXC45D
+00741  C454  F0 07              BEQ XXC45D
+00742  C456  C9 2D              CMP #$2D        ;'-'
+00743  C458  F0 03              BEQ XXC45D
+00744  C45A  4C 08 AF    XXC45A JMP SYTERR      ; C64 = $AF08
+00745  C45D              ;********************************
+00746  C45D              ;
+00747  C45D              ;********************************
+00748  C45D  20 6B A9    XXC45D JSR LINGET
+00749  C460  20 13 A6           JSR FNDLIN
+00750  C463  20 79 00           JSR $0079
+00751  C466  F0 0C              BEQ XXC474
+00752  C468  C9 2D              CMP #$2D        ;'-'
+00753  C46A  D0 EE              BNE XXC45A
+00754  C46C  20 73 00           JSR $0073
+00755  C46F  20 6B A9           JSR LINGET
+00756  C472  D0 E6              BNE XXC45A
+00757  C474  A5 14       XXC474 LDA LINNUM
+00758  C476  05 15              ORA LINNUM+1
+00759  C478  D0 06              BNE XXC480
+00760  C47A  A9 FF              LDA #$FF
+00761  C47C  85 14              STA LINNUM
+00762  C47E  85 15              STA LINNUM+1
+00763  C480  60          XXC480 RTS 
+00764  C481              ;********************************
+00765  C481              ;
+00766  C481              ;********************************
+00767  C481  20 CA C2    XXC481 JSR XXC2CA
+00768  C484  85 43              STA INPPTR
+00769  C486  20 CA C2           JSR XXC2CA
+00770  C489  85 44              STA INPPTR+1
+00771  C48B  38                 SEC 
+00772  C48C  A5 14              LDA LINNUM
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0016
+
+LINE# LOC   CODE        LINE
+
+
+00773  C48E  E5 43              SBC INPPTR
+00774  C490  A5 15              LDA LINNUM+1
+00775  C492  E5 44              SBC INPPTR+1
+00776  C494  60                 RTS 
+00777  C495              ;********************************
+00778  C495              ;
+00779  C495              ;********************************
+00780  C495  A5 5F       XXC495 LDA EXTTAB
+00781  C497  85 22              STA INDEX
+00782  C499  A5 60              LDA EXTTAB+1
+00783  C49B  85 23              STA INDEX+1
+00784  C49D  A5 2D              LDA VARTAB
+00785  C49F  85 24              STA INDEX+2
+00786  C4A1  A5 2E              LDA VARTAB+1
+00787  C4A3  85 25              STA INDEX+3
+00788  C4A5  60                 RTS 
+00789  C4A6              ;********************************
+00790  C4A6              ;
+00791  C4A6              ;********************************
+00792  C4A6  A5 22       XXC4A6 LDA INDEX
+00793  C4A8  C5 24              CMP INDEX+2
+00794  C4AA  D0 04              BNE XXC4B0
+00795  C4AC  A5 23              LDA INDEX+1
+00796  C4AE  C5 25              CMP INDEX+3
+00797  C4B0  60          XXC4B0 RTS 
+00798  C4B1              ;********************************
+00799  C4B1              ;
+00800  C4B1              ;********************************
+00801  C4B1  AC 3F C6    XXC4B1 LDY XXC63F
+00802  C4B4  C8                 INY 
+00803  C4B5  B1 22              LDA (INDEX),Y
+00804  C4B7  AC 43 C6           LDY SAVX
+00805  C4BA  C8                 INY 
+00806  C4BB  91 22              STA (INDEX),Y
+00807  C4BD  20 A6 C4           JSR XXC4A6
+00808  C4C0  D0 01              BNE XXC4C3
+00809  C4C2  60                 RTS 
+00810  C4C3              ;********************************
+00811  C4C3              ;
+00812  C4C3              ;********************************
+00813  C4C3  E6 22       XXC4C3 INC INDEX
+00814  C4C5  D0 EA              BNE XXC4B1
+00815  C4C7  E6 23              INC INDEX+1
+00816  C4C9  D0 E6              BNE XXC4B1
+00817  C4CB  AC 3F C6    XXC4CB LDY XXC63F
+00818  C4CE  B1 24              LDA (INDEX+2),Y
+00819  C4D0  AC 43 C6           LDY SAVX
+00820  C4D3  91 24              STA (INDEX+2),Y
+00821  C4D5  20 A6 C4           JSR XXC4A6
+00822  C4D8  D0 01              BNE XXC4DB
+00823  C4DA  60                 RTS 
+00824  C4DB              ;********************************
+00825  C4DB              ;
+00826  C4DB              ;********************************
+00827  C4DB  A5 24       XXC4DB LDA INDEX+2
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0017
+
+LINE# LOC   CODE        LINE
+
+
+00828  C4DD  D0 02              BNE XXC4E1
+00829  C4DF  C6 25              DEC INDEX+3
+00830  C4E1  C6 24       XXC4E1 DEC INDEX+2
+00831  C4E3  4C CB C4           JMP XXC4CB
+00832  C4E6              ;********************************
+00833  C4E6              ;
+00834  C4E6              ;********************************
+00835  C4E6  20 52 C4    FORMAT JSR XXC452
+00836  C4E9  D0 03              BNE XXC4EE
+00837  C4EB  20 C0 C2    XXC4EB JSR XXC2C0
+00838  C4EE  20 D7 AA    XXC4EE JSR PRINTE
+00839  C4F1  20 5A C5           JSR XXC55A
+00840  C4F4  20 CA C2           JSR XXC2CA
+00841  C4F7  F0 05              BEQ XXC4FE
+00842  C4F9  20 81 C4           JSR XXC481
+00843  C4FC  B0 03              BCS XXC501
+00844  C4FE  4C 74 A4    XXC4FE JMP READY
+00845  C501              ;********************************
+00846  C501              ;
+00847  C501              ;********************************
+00848  C501  A6 43       XXC501 LDX INPPTR
+00849  C503  A5 44              LDA INPPTR+1
+00850  C505  20 CD BD           JSR LINPRT
+00851  C508  A9 20              LDA #$20        ;' '
+00852  C50A  20 D2 FF           JSR CHROUT
+00853  C50D  A2 00              LDX #$00
+00854  C50F  20 CA C2    XXC50F JSR XXC2CA
+00855  C512  F0 D7              BEQ XXC4EB
+00856  C514  C9 3B              CMP #OLDLIN      ;';'
+00857  C516  F0 38              BEQ XXC550
+00858  C518  C9 20              CMP #$20        ;' '
+00859  C51A  F0 06              BEQ XXC522
+00860  C51C  20 D2 FF           JSR CHROUT
+00861  C51F  E8                 INX 
+00862  C520  D0 ED              BNE XXC50F
+00863  C522  E0 07       XXC522 CPX #$07
+00864  C524  B0 06              BCS XXC52C
+00865  C526  20 D2 FF           JSR CHROUT
+00866  C529  E8                 INX 
+00867  C52A  D0 F6              BNE XXC522
+00868  C52C  20 CA C2    XXC52C JSR XXC2CA
+00869  C52F  F0 BA              BEQ XXC4EB
+00870  C531  C9 20              CMP #$20        ;' '
+00871  C533  F0 F7              BEQ XXC52C
+00872  C535  20 D2 FF    XXC535 JSR CHROUT
+00873  C538  E8                 INX 
+00874  C539  20 CA C2           JSR XXC2CA
+00875  C53C  F0 AD              BEQ XXC4EB
+00876  C53E  C9 3B              CMP #OLDLIN      ;';'
+00877  C540  D0 F3              BNE XXC535
+00878  C542  48                 PHA 
+00879  C543  A9 20              LDA #$20        ;' '
+00880  C545  E0 17       XXC545 CPX #$17
+00881  C547  B0 06              BCS XXC54F
+00882  C549  20 D2 FF           JSR CHROUT
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0018
+
+LINE# LOC   CODE        LINE
+
+
+00883  C54C  E8                 INX 
+00884  C54D  D0 F6              BNE XXC545
+00885  C54F  68          XXC54F PLA 
+00886  C550  20 D2 FF    XXC550 JSR CHROUT
+00887  C553  20 CA C2           JSR XXC2CA
+00888  C556  F0 93              BEQ XXC4EB
+00889  C558  D0 F6              BNE XXC550
+00890  C55A  20 E4 FF    XXC55A JSR GETIN
+00891  C55D  F0 1E              BEQ XXC57D
+00892  C55F  C9 03              CMP #$03
+00893  C561  D0 06              BNE XXC569
+00894  C563  20 59 A6    XXC563 JSR CLRENT
+00895  C566  4C 74 A4           JMP READY
+00896  C569              ;********************************
+00897  C569              ;
+00898  C569              ;********************************
+00899  C569  C9 20       XXC569 CMP #$20        ;' '
+00900  C56B  D0 10              BNE XXC57D
+00901  C56D  20 E4 FF    XXC56D JSR GETIN
+00902  C570  C9 20              CMP #$20        ;' '
+00903  C572  F0 F9              BEQ XXC56D
+00904  C574  20 E4 FF    XXC574 JSR GETIN
+00905  C577  F0 FB              BEQ XXC574
+00906  C579  C9 03              CMP #$03
+00907  C57B  F0 E6              BEQ XXC563
+00908  C57D  60          XXC57D RTS 
+00909  C57E              ;********************************
+00910  C57E              ; PRINT MESSAGE TO SCREEN
+00911  C57E              ; REG X CONTAINS INDEX INTO
+00912  C57E              ; MESSAGE TABLE
+00913  C57E              ;********************************
+00914  C57E  8E 45 C6    PRTXT  STX FILEXT      ;$C57E
+00915  C581  AE 45 C6    PRTNEX LDX FILEXT      ;$C581
+00916  C584  BD E7 C5           LDA MSGSTR,X
+00917  C587  08                 PHP 
+00918  C588  29 7F              AND #$7F
+00919  C58A  20 D2 FF           JSR CHROUT
+00920  C58D  EE 45 C6           INC FILEXT
+00921  C590  28                 PLP 
+00922  C591  10 EE              BPL PRTNEX
+00923  C593  60                 RTS 
+00924  C594              ;********************************
+00925  C594              ; PRINT 'FILE ERROR'
+00926  C594              ;********************************
+00927  C594  20 CC FF    PFILER JSR CLRCHN
+00928  C597  A9 08              LDA #$08
+00929  C599  20 C3 FF           JSR CLOSE
+00930  C59C                                     ;LDX #$4D      ;'M'
+00931  C59C  A2 4D              LDX #MSGERR-MSGSTR ;$4D.   
+00932  C59E  20 7E C5           JSR PRTXT
+00933  C5A1  4C 74 A4           JMP READY
+00934  C5A4              ;********************************
+00935  C5A4              ; COMMANDS
+00936  C5A4              ; AUTO
+00937  C5A4              ; CHANGE 
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0019
+
+LINE# LOC   CODE        LINE
+
+
+00938  C5A4              ; CPUT
+00939  C5A4              ; DELETE
+00940  C5A4              ; FIND
+00941  C5A4              ; FORMAT
+00942  C5A4              ; GET
+00943  C5A4              ; KILL
+00944  C5A4              ; NUMBER
+00945  C5A4              ; PUT
+00946  C5A4              ;********************************
+00947  C5A4  41 55 54    CMDTAB .BYTE 'AUT'     ;$C5A4
+00948  C5A7  CF                 .BYTE $CF       ;'O'+$80
+00949  C5A8  43 48              .BYTE 'CHANG'
+00950  C5AD  C5                 .BYTE $C5       ;'E'+$80
+00951  C5AE  43 50 55           .BYTE 'CPU'
+00952  C5B1  D4                 .BYTE $D4       ;'T'+$80
+00953  C5B2  44 45              .BYTE 'DELET'
+00954  C5B7  C5                 .BYTE $C5       ;'E'+$80
+00955  C5B8  46 49 4E           .BYTE 'FIN'
+00956  C5BB  C4                 .BYTE $C4       ;'D'+$80
+00957  C5BC  46 4F              .BYTE 'FORMA'
+00958  C5C1  D4                 .BYTE $D4       ;'T'+$80
+00959  C5C2  47 45              .BYTE 'GE'
+00960  C5C4  D4                 .BYTE $D4       ;'T'+$80
+00961  C5C5  4B 49 4C           .BYTE 'KIL'
+00962  C5C8  CC                 .BYTE $CC       ;'L'+$80
+00963  C5C9  4E 55              .BYTE 'NUMBE'
+00964  C5CE  D2                 .BYTE $D2       ;'R'+$80
+00965  C5CF  50 55              .BYTE 'PU'
+00966  C5D1  D4                 .BYTE $D4       ;'T'+$80
+00967  C5D2              ;********************************
+00968  C5D2              ;
+00969  C5D2              ;********************************
+00970  C5D2  00                 .BYTE $00
+00971  C5D3              ;**************************************
+00972  C5D3              ; VECTOR TABLE - ADDRESS - 1
+00973  C5D3              ;**************************************
+00974  C5D3              ; AUTO
+00975  C5D3              ;VECTOR .BYTE $91 ;XXC5D3
+00976  C5D3              ;XXC5D4 .BYTE $C0 ;XXC3D4
+00977  C5D3  91 C0       VECTOR .WORD AUTO-1
+00978  C5D5              ; CHANGE
+00979  C5D5                                     ;.BYTE $3F
+00980  C5D5                                     ;.BYTE $C3
+00981  C5D5  3F C3              .WORD CHANGE-1
+00982  C5D7              ; CPUT
+00983  C5D7                                     ;.BYTE $A6
+00984  C5D7                                     ;.BYTE $C1
+00985  C5D7  A6 C1              .WORD CPUT-1
+00986  C5D9              ; DELETE
+00987  C5D9                                     ;.BYTE $DD
+00988  C5D9                                     ;.BYTE $C2
+00989  C5D9  DD C2              .WORD DELETE-1
+00990  C5DB              ; FIND
+00991  C5DB                                     ;.BYTE $4F
+00992  C5DB                                     ;.BYTE $C3
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0020
+
+LINE# LOC   CODE        LINE
+
+
+00993  C5DB  4F C3              .WORD FIND-1
+00994  C5DD              ; FORMAT
+00995  C5DD                                     ;.BYTE $E5
+00996  C5DD                                     ;.BYTE $C4
+00997  C5DD  E5 C4              .WORD FORMAT-1
+00998  C5DF              ; GET
+00999  C5DF                                     ;.BYTE $43
+01000  C5DF                                     ;.BYTE $C1
+01001  C5DF  43 C1              .WORD GET-1
+01002  C5E1              ; KILL
+01003  C5E1                                     ;.BYTE $0D
+01004  C5E1                                     ;.BYTE $C0
+01005  C5E1  0D C0              .WORD KILL-1
+01006  C5E3              ; NUMBER
+01007  C5E3                                     ;.BYTE $E6
+01008  C5E3                                     ;.BYTE $C0
+01009  C5E3  E6 C0              .WORD NUMBER-1
+01010  C5E5              ; PUT
+01011  C5E5                                     ;.BYTE $A9
+01012  C5E5                                     ;.BYTE $C1
+01013  C5E5  A9 C1              .WORD PUT-1
+01014  C5E7              ;**************************************
+01015  C5E7              ; MESSAGE TABLE
+01016  C5E7              ;**************************************   
+01017  C5E7  0D          MSGSTR .BYTE $0D       ;$C5E7
+01018  C5E8  0D                 .BYTE $0D
+01019  C5E9  20 20              .BYTE '      COMMODORE 64 EDITOR V072982'
+01020  C60A  0D                 .BYTE $0D
+01021  C60B  28 43              .BYTE '(C) 1982 BY COMMODORE BUSINESS MACH
+INES'
+01022  C632  0D                 .BYTE $0D
+01023  C633  8D                 .BYTE $8D       ; $0D WITH BIT 8 SET
+01024  C634  0D          MSGERR .BYTE $0D
+01025  C635  46 49              .BYTE 'FILE ERRO'
+01026  C63E  D2                 .BYTE $D2       ; $52 (R) WITH BIT 8 SET
+01027  C63F              ;**************************************   
+01028  C63F  00          XXC63F .BYTE $00       ;XXC63F
+01029  C640  00          XXC640 .BYTE $00       ;XXC640
+01030  C641  00          SAVA   .BYTE $00       ;XXC641
+01031  C642  00          SAVP   .BYTE $00       ;XXC642
+01032  C643  00          SAVX   .BYTE $00       ;XXC643
+01033  C644  00          SAVY   .BYTE $00       ;XXC644
+01034  C645  00          FILEXT .BYTE $00       ;XXC645
+01035  C646  57 2C              .BYTE 'W,S,'
+01036  C64A              ;********************************
+01037  C64A              .END
+
+
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ANDORE   AEFD    AUTO     C092    BASBUF   0200    CHANGE   C340
+
+
+
+
+
+
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ CHKIN    FFC6    CHKOUT   FFC9    CHRIN    FFCF    CHRLOP   A48D
+ CHRMOD   008A    CHROUT   FFD2    CKCOMA   E20E    CLOSE    FFC3
+ CLRCHN   FFCC    CLRENT   A659    CMDTAB   C5A4    CPUT     C1A7
+ DELETE   C2DE    EDITOR   C000    EDNAME   E257    EXTTAB   005F
+ FILEXT   C645    FILOK    C297    FIND     C350    FNADR    00BB
+ FNDLIN   A613    FNLEN    00B7    FORMAT   C4E6    FOUT     BDDD
+ GET      C144    GETFIL   C29A    GETIN    FFE4    GETNAM   C246
+ INDEL    A4A2    INDEX    0022    INPPTR   0043    KILL     C00E
+ LINGET   A96B    LINKPG   A533    LINNUM   0014    LINPRT   BDCD
+ LSVPAR   E1E6    MAINE    A52A    MSGERR   C634    MSGSTR   C5E7
+ NUMBER   C0E7    OLDLIN   003B    OPEN     FFC0    OPNAM    C275
+ PFILER   C594    PRINTE   AAD7    PRTNEX   C581    PRTXT    C57E
+ PUT      C1AA    READY    A474    SAVA     C641    SAVP     C642
+ SAVREG   C01D    SAVX     C643    SAVY     C644    SETLFS   FFBA
+ SETNAM   FFBD    SETTMO   FFA2    SETXAB   C2D2    SGNENT   BC49
+ STACK    0100    STATUS   0090    SYTERR   AF08    TXTPTR   007A
+ TXTTAB   002B    VARTAB   002D    VECTOR   C5D3    XXC02C   C02C
+ XXC03E   C03E    XXC04D   C04D    XXC05A   C05A    XXC05C   C05C
+ XXC06C   C06C    XXC079   C079    XXC07D   C07D    XXC0A0   C0A0
+ XXC0CE   C0CE    XXC0D9   C0D9    XXC0E1   C0E1    XXC103   C103
+ XXC11E   C11E    XXC128   C128    XXC12B   C12B    XXC151   C151
+ XXC156   C156    XXC166   C166    XXC178   C178    XXC180   C180
+ XXC184   C184    XXC19B   C19B    XXC19E   C19E    XXC1A4   C1A4
+ XXC1BC   C1BC    XXC1C8   C1C8    XXC1CB   C1CB    XXC1D8   C1D8
+ XXC1E3   C1E3    XXC1E7   C1E7    XXC1F9   C1F9    XXC201   C201
+ XXC203   C203    XXC20B   C20B    XXC20F   C20F    XXC218   C218
+ XXC224   C224    XXC22C   C22C    XXC23A   C23A    XXC24F   C24F
+ XXC254   C254    XXC25F   C25F    XXC272   C272    XXC2A5   C2A5
+ XXC2B6   C2B6    XXC2B9   C2B9    XXC2BC   C2BC    XXC2C0   C2C0
+ XXC2C6   C2C6    XXC2CA   C2CA    XXC2CD   C2CD    XXC2DB   C2DB
+ XXC2FE   C2FE    XXC318   C318    XXC329   C329    XXC338   C338
+ XXC357   C357    XXC362   C362    XXC36A   C36A    XXC375   C375
+ XXC37F   C37F    XXC382   C382    XXC385   C385    XXC392   C392
+ XXC3BA   C3BA    XXC3D6   C3D6    XXC3E4   C3E4    XXC3E7   C3E7
+ XXC3F8   C3F8    XXC404   C404    XXC413   C413    XXC41E   C41E
+ XXC427   C427    XXC437   C437    XXC440   C440    XXC44F   C44F
+ XXC452   C452    XXC45A   C45A    XXC45D   C45D    XXC474   C474
+ XXC480   C480    XXC481   C481    XXC495   C495    XXC4A6   C4A6
+ XXC4B0   C4B0    XXC4B1   C4B1    XXC4C3   C4C3    XXC4CB   C4CB
+ XXC4DB   C4DB    XXC4E1   C4E1    XXC4EB   C4EB    XXC4EE   C4EE
+ XXC4FE   C4FE    XXC501   C501    XXC50F   C50F    XXC522   C522
+ XXC52C   C52C    XXC535   C535    XXC545   C545    XXC54F   C54F
+ XXC550   C550    XXC55A   C55A    XXC563   C563    XXC569   C569
+ XXC56D   C56D    XXC574   C574    XXC57D   C57D    XXC63F   C63F
+ XXC640   C640    XXCC0B   C00B    XXCC0C   C00C    XXCC0D   C00D
+ XXCC0F   C00F   
+
+END OF ASSEMBLY
+CEDITORNL.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EDITOR64 SOURCE CODE......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00017  C000              .FIL   EDITOR64.ASM
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ANDORE   AEFD    AUTO     C092    BASBUF   0200    CHANGE   C340
+ CHKIN    FFC6    CHKOUT   FFC9    CHRIN    FFCF    CHRLOP   A48D
+ CHRMOD   008A    CHROUT   FFD2    CKCOMA   E20E    CLOSE    FFC3
+ CLRCHN   FFCC    CLRENT   A659    CMDTAB   C5A4    CPUT     C1A7
+ DELETE   C2DE    EDITOR   C000    EDNAME   E257    EXTTAB   005F
+ FILEXT   C645    FILOK    C297    FIND     C350    FNADR    00BB
+ FNDLIN   A613    FNLEN    00B7    FORMAT   C4E6    FOUT     BDDD
+ GET      C144    GETFIL   C29A    GETIN    FFE4    GETNAM   C246
+ INDEL    A4A2    INDEX    0022    INPPTR   0043    KILL     C00E
+ LINGET   A96B    LINKPG   A533    LINNUM   0014    LINPRT   BDCD
+ LSVPAR   E1E6    MAINE    A52A    MSGERR   C634    MSGSTR   C5E7
+ NUMBER   C0E7    OLDLIN   003B    OPEN     FFC0    OPNAM    C275
+ PFILER   C594    PRINTE   AAD7    PRTNEX   C581    PRTXT    C57E
+ PUT      C1AA    READY    A474    SAVA     C641    SAVP     C642
+ SAVREG   C01D    SAVX     C643    SAVY     C644    SETLFS   FFBA
+ SETNAM   FFBD    SETTMO   FFA2    SETXAB   C2D2    SGNENT   BC49
+ STACK    0100    STATUS   0090    SYTERR   AF08    TXTPTR   007A
+ TXTTAB   002B    VARTAB   002D    VECTOR   C5D3    XXC02C   C02C
+ XXC03E   C03E    XXC04D   C04D    XXC05A   C05A    XXC05C   C05C
+ XXC06C   C06C    XXC079   C079    XXC07D   C07D    XXC0A0   C0A0
+ XXC0CE   C0CE    XXC0D9   C0D9    XXC0E1   C0E1    XXC103   C103
+ XXC11E   C11E    XXC128   C128    XXC12B   C12B    XXC151   C151
+ XXC156   C156    XXC166   C166    XXC178   C178    XXC180   C180
+ XXC184   C184    XXC19B   C19B    XXC19E   C19E    XXC1A4   C1A4
+ XXC1BC   C1BC    XXC1C8   C1C8    XXC1CB   C1CB    XXC1D8   C1D8
+ XXC1E3   C1E3    XXC1E7   C1E7    XXC1F9   C1F9    XXC201   C201
+ XXC203   C203    XXC20B   C20B    XXC20F   C20F    XXC218   C218
+ XXC224   C224    XXC22C   C22C    XXC23A   C23A    XXC24F   C24F
+ XXC254   C254    XXC25F   C25F    XXC272   C272    XXC2A5   C2A5
+ XXC2B6   C2B6    XXC2B9   C2B9    XXC2BC   C2BC    XXC2C0   C2C0
+ XXC2C6   C2C6    XXC2CA   C2CA    XXC2CD   C2CD    XXC2DB   C2DB
+ XXC2FE   C2FE    XXC318   C318    XXC329   C329    XXC338   C338
+ XXC357   C357    XXC362   C362    XXC36A   C36A    XXC375   C375
+ XXC37F   C37F    XXC382   C382    XXC385   C385    XXC392   C392
+ XXC3BA   C3BA    XXC3D6   C3D6    XXC3E4   C3E4    XXC3E7   C3E7
+ XXC3F8   C3F8    XXC404   C404    XXC413   C413    XXC41E   C41E
+ XXC427   C427    XXC437   C437    XXC440   C440    XXC44F   C44F
+ XXC452   C452    XXC45A   C45A    XXC45D   C45D    XXC474   C474
+ XXC480   C480    XXC481   C481    XXC495   C495    XXC4A6   C4A6
+ XXC4B0   C4B0    XXC4B1   C4B1    XXC4C3   C4C3    XXC4CB   C4CB
+ XXC4DB   C4DB    XXC4E1   C4E1    XXC4EB   C4EB    XXC4EE   C4EE
+ XXC4FE   C4FE    XXC501   C501    XXC50F   C50F    XXC522   C522
+ XXC52C   C52C    XXC535   C535    XXC545   C545    XXC54F   C54F
+ XXC550   C550    XXC55A   C55A    XXC563   C563    XXC569   C569
+ XXC56D   C56D    XXC574   C574    XXC57D   C57D    XXC63F   C63F
+ XXC640   C640    XXCC0B   C00B    XXCC0C   C00C    XXCC0D   C00D
+ XXCC0F   C00F   
+
+END OF ASSEMBLY
+
+CROSS REFERENCE......PAGE    1
+
+
+  ANDORE $AEFD    67   247   253   615
+  AUTO   $C092   198   977
+  BASBUF $0200    54   169   405   416   421   425   428   432   435   642
+
+                 689   728
+  CHANGE $C340   602   981
+  CHKIN  $FFC6    85   294
+  CHKOUT $FFC9    86   353
+  CHRIN  $FFCF    88   303
+  CHRLOP $A48D    59   143   146
+  CHRMOD $008A    40   120   122   124
+  CHROUT $FFD2    89   361   382   707   852   860   865   872   882   886
+
+                 919
+  CKCOMA $E20E    76   467   501
+  CLOSE  $FFC3    84   330   376   929
+  CLRCHN $FFCC    87   328   374   927
+  CLRENT $A659    64   597   894
+  CMDTAB $C5A4   171   177   179   947
+  CPUT   $C1A7   346   985
+  DELETE $C2DE   544   989
+* EDITOR $C000    95
+  EDNAME $E257    77   447
+  EXTTAB $005F    36   324   326   336   338   339   515   516   518   526
+
+                 533   535   546   547   553   557   558   559   562   565
+
+                 576   580   622   623   625   640   661   690   714   780
+
+                 782
+  FILEXT $C645   350   371   400   459   914   915   920  1034
+  FILOK  $C297   486   488   493
+  FIND   $C350   609   993
+  FNADR  $00BB    41   250   252   259   262   263   266   279   281   453
+
+                 504   505
+  FNDLIN $A613    63   246   503   550   749
+  FNLEN  $00B7    46   445   456   464   479
+  FORMAT $C4E6   835   997
+  FOUT   $BDDD    71   225
+  GET    $C144   293  1001
+  GETFIL $C29A   293   498
+  GETIN  $FFE4    90   890   901   904
+  GETNAM $C246   443   451   498
+  INDEL  $A4A2    60   240
+  INDEX  $0022    33   548   549   560   564   577   581   583   589   590
+
+                 781   783   785   787   792   793   795   796   803   806
+
+                 813   815   818   820   827   829   830
+  INPPTR $0043    38   702   703   768   770   773   775   848   849
+  KILL   $C00E   117  1005
+  LINGET $A96B    65   198   210   245   248   254   502   748   755
+  LINKPG $A533    62   588
+  LINNUM $0014    32   199   201   215   219   249   251   261   265   286
+
+                 288   757   758   761   762   772   774
+  LINPRT $BDCD    70   704   850
+  LSVPAR $E1E6    75   472
+  MAINE  $A52A    61   630   710
+  MSGERR $C634   931  1024
+  MSGSTR $C5E7   916   931  1017
+  NUMBER $C0E7   244  1009
+  OLDLIN $003B    37   100   101   200   202   212   213   217   220   393
+
+                 856   876
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    2
+
+
+  OPEN   $FFC0    83   484
+  OPNAM  $C275   472   508
+  PFILER $C594   297   356   364   489   927
+  PRINTE $AAD7    66   275   617   716   838
+  PRTNEX $C581   915   922
+  PRTXT  $C57E   106   914   932
+  PUT    $C1AA   348  1013
+  READY  $A474    58   598   844   895   933
+  SAVA   $C641   129   155   639   646   672   700  1030
+  SAVP   $C642   132   153   161   657   665   670   697  1031
+  SAVREG $C01D   129   140
+  SAVX   $C643   133   152   650   675   680   718   804   819  1032
+  SAVY   $C644   134   151   687   693  1033
+  SETLFS $FFBA    81   477
+  SETNAM $FFBD    82   482
+* SETTMO $FFA2    91
+  SETXAB $C2D2   276   532
+  SGNENT $BC49    69   224
+  STACK  $0100    50   142   145
+  STATUS $0090    45   295   307   320   354   362   444   485
+  SYTERR $AF08    68   540   744
+  TXTPTR $007A    39   168   185   723   735
+  TXTTAB $002B    34   532   534
+  VARTAB $002D    35   325   327   454   460   480   481   506   507   570
+
+                 571   573   574   582   593   596   696   698   699   701
+
+                 784   786
+  VECTOR $C5D3   189   191   977
+  XXC02C $C02C   121   123   140
+  XXC03E $C03E   144   151   181   193   209
+  XXC04D $C04D   147   161
+  XXC05A $C05A   168   180
+  XXC05C $C05C   169   184
+  XXC06C $C06C   176   178
+  XXC079 $C079   172   182
+  XXC07D $C07D   174   185
+  XXC0A0 $C0A0   163   207
+  XXC0CE $C0CE   230   234
+  XXC0D9 $C0D9   231   235
+  XXC0E1 $C0E1   211   214   239
+  XXC103 $C103   255   270   289
+  XXC11E $C11E   267   268
+  XXC128 $C128   256   271
+  XXC12B $C12B   244   275   331
+  XXC151 $C151   296   301   321
+  XXC156 $C156   303   309
+  XXC166 $C166   305   310
+  XXC178 $C178   313   317
+  XXC180 $C180   316   320
+  XXC184 $C184   308   322
+  XXC19B $C19B   315   335
+  XXC19E $C19E   310   314   335   336
+  XXC1A4 $C1A4   337   339
+  XXC1BC $C1BC   360   385
+  XXC1C8 $C1C8   363   368
+  XXC1CB $C1CB   355   369
+  XXC1D8 $C1D8   370   374
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    3
+
+
+  XXC1E3 $C1E3   381   389   392   399   401
+  XXC1E7 $C1E7   373   383   390
+  XXC1F9 $C1F9   387   393
+  XXC201 $C201   394   397
+  XXC203 $C203   396   398
+  XXC20B $C20B   239   402
+  XXC20F $C20F   404   407
+  XXC218 $C218   415   420
+  XXC224 $C224   418   421
+  XXC22C $C22C   423   425   431
+  XXC23A $C23A   426   432
+  XXC24F $C24F   351   451
+  XXC254 $C254   453   457
+  XXC25F $C25F   459   463
+  XXC272 $C272   466   468
+  XXC2A5 $C2A5   500   502
+  XXC2B6 $C2B6   302   323   512
+  XXC2B9 $C2B9   512   513
+  XXC2BC $C2BC   260   264   306   319   513   514
+  XXC2C0 $C2C0   257   269   317   368   516   524   837
+  XXC2C6 $C2C6   517   519
+  XXC2CA $C2CA   255   267   369   383   523   524   626   767   769   840
+
+                 854   868   874   887
+  XXC2CD $C2CD   311   525
+  XXC2DB $C2DB   540   544
+  XXC2FE $C2FE   551   554   560
+  XXC318 $C318   576   579   584
+  XXC329 $C329   125   203   271   377   567   588
+  XXC338 $C338   594   596
+  XXC357 $C357   608   612
+  XXC362 $C362   614   616
+  XXC36A $C36A   619   641
+  XXC375 $C375   618   624   626
+  XXC37F $C37F   627   630   660
+  XXC382 $C382   629   634   719
+  XXC385 $C385   635   643
+  XXC392 $C392   640   647
+  XXC3BA $C3BA   659   662
+  XXC3D6 $C3D6   671   673
+  XXC3E4 $C3E4   676   679
+  XXC3E7 $C3E7   658   678   680
+  XXC3F8 $C3F8   689   694
+  XXC404 $C404   686   695
+  XXC413 $C413   652   667   669   702
+  XXC41E $C41E   707   715
+  XXC427 $C427   709   714
+  XXC437 $C437   605   612   723
+  XXC440 $C440   728   734
+  XXC44F $C44F   731   735
+  XXC452 $C452   468   545   616   740   835
+  XXC45A $C45A   729   744   753   756
+  XXC45D $C45D   740   741   743   748
+  XXC474 $C474   751   757
+  XXC480 $C480   759   763
+  XXC481 $C481   372   628   767   842
+  XXC495 $C495   653   780
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    4
+
+
+  XXC4A6 $C4A6   792   807   821
+  XXC4B0 $C4B0   794   797
+  XXC4B1 $C4B1   679   801   814   816
+  XXC4C3 $C4C3   808   813
+  XXC4CB $C4CB   677   817   831
+  XXC4DB $C4DB   822   827
+  XXC4E1 $C4E1   828   830
+  XXC4EB $C4EB   837   855   869   875   888
+  XXC4EE $C4EE   836   838
+  XXC4FE $C4FE   841   844
+  XXC501 $C501   843   848
+  XXC50F $C50F   854   862
+  XXC522 $C522   859   863   867
+  XXC52C $C52C   864   868   871
+  XXC535 $C535   872   877
+  XXC545 $C545   880   884
+  XXC54F $C54F   881   885
+  XXC550 $C550   857   886   889
+  XXC55A $C55A   717   839   890
+  XXC563 $C563   894   907
+  XXC569 $C569   893   899
+  XXC56D $C56D   901   903
+  XXC574 $C574   904   905
+  XXC57D $C57D   891   900   908
+  XXC63F $C63F   165   175   186   602   609   649   674   730   801   817
+
+                1028
+  XXC640 $C640   634   635   636  1029
+* XXCC0B $C00B   114
+* XXCC0C $C00C   115
+* XXCC0D $C00D   116
+* XXCC0F $C00F   118
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

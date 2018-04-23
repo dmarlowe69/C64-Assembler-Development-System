@@ -1,0 +1,5 @@
+10 rem boot editor/loader/dos
+20 ifa=0thena=1:load"dos 5.1",8,1
+30 ifa=1thena=2:load"hiloader64",8,1
+40 ifa=2thena=3:load"editor64",8,1
+50 ifa=3thensys52224:sys49152:new

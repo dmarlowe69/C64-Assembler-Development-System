@@ -1,0 +1,1691 @@
+BCROSSREF.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CROSSREF64......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00003  0000              ;*********************************
+00004  0000              *=$0801                ;START OF BASIC
+00005  0801              ;*********************************
+00006  0801              ;
+00007  0801              ;         CROSSREF64
+00008  0801              ;      CROSSREF.C64 V072882
+00009  0801              ; DUMP CROSSREF FROM ASSEMBLER64
+00010  0801              ; (C) 1982 BY COMMODORE MACHINES
+00011  0801              ;
+00012  0801              ;  DOCUMENTED BY DENTON MARLOWE
+00013  0801              ;
+00014  0801              ;********************************
+00015  0801              ;
+00016  0801              ; BASIC FORMAT PROGRAM
+00017  0801              ;
+00018  0801              ; 10 SYS(2063)
+00019  0801              ;
+00020  0801              ;********************************
+00021  0801  0D 08              .WORD BASIC     ;LINE LINK POINTER
+00022  0803  0A                 .BYTE $0A,$00   ;LINE NUMBER (10)
+00022  0804  00 
+00023  0805  9E                 .BYTE $9E       ;SYS COMMAND TOKEN
+00024  0806  28 32              .BYTE '(2063)'  ;CALL TO $080F
+00025  080C  00                 .BYTE $00       ;END OF LINE
+00026  080D  00          BASIC  .BYTE $00,$00   ;END OF BASIC
+00026  080E  00 
+00027  080F              ;*********************************
+00028  080F              ;*=$080F        ;CROSSREF64 ORGIN
+00029  080F              ;*********************************
+00030  080F              ; MAIN BODY OF CODE
+00031  080F              ;*********************************
+00032  080F              .FIL   CROSSREF.ASM
+00033  080F              ;*********************************
+00034  080F              ;
+00035  080F              ;         CROSSREF64
+00036  080F              ;      CROSSREF.C64 V072882
+00037  080F              ; DUMP CROSSREF FROM ASSEMBLER64
+00038  080F              ; (C) 1982 BY COMMODORE MACHINES
+00039  080F              ;
+00040  080F              ;  DOCUMENTED BY DENTON MARLOWE
+00041  080F              ;
+00042  080F              ;********************************
+00043  080F              ; PAGE $0000 EQUATES
+00044  080F              ;********************************
+00045  080F              ADRAY1=$0003
+00046  080F              ADRAY2=$0005
+00047  080F              CHARAC=$0007
+00048  080F              ENDCHR=$0008
+00049  080F              TRMPOS=$0009
+00050  080F              VERCK  =$000A
+00051  080F              COUNT  =$000B
+00052  080F              DIMFLG=$000C
+00053  080F              VALTYP=$000D
+00054  080F              INTFLG=$000E
+00055  080F              GARBFL=$000F
+
+
+
+
+
+
+CROSSREF64......PAGE 0003
+
+LINE# LOC   CODE        LINE
+
+
+00056  080F              SUBFLG=$0010
+00057  080F              INPFLG=$0011
+00058  080F              TANSGN=$0012
+00059  080F              CHANNL=$0013
+00060  080F              LINNUM=$0014
+00061  080F              TEMPPT=$0016
+00062  080F              LASTPT=$0017
+00063  080F              TEMPST=$0019
+00064  080F              ;********************************
+00065  080F              ; POINTERS
+00066  080F              ;********************************
+00067  080F              XRLPNT = $04
+00068  080F              XRFPNT = $06
+00069  080F              ;********************************
+00070  080F              ; EXTERNAL ADDRESS EQUATES
+00071  080F              ;********************************
+00072  080F              SCREG=$D011
+00073  080F              ;********************************
+00074  080F              ; EXTERNAL ADDRESS EQUATES
+00075  080F              ;********************************
+00076  080F              BASSFT=$E386 RETURN TO BASIC
+00077  080F              PRTCHR=$E716 PRINT CHAR TO SCREEN
+00078  080F              ;********************************
+00079  080F              ; EXTERNAL ADDRESS EQUATES
+00080  080F              ;********************************
+00081  080F              SETLFS=$FFBA
+00082  080F              SETNAM=$FFBD
+00083  080F              OPEN=$FFC0
+00084  080F              CLOSE=$FFC3
+00085  080F              CHKIN=$FFC6
+00086  080F              CHKOUT=$FFC9
+00087  080F              CLRCHN=$FFCC
+00088  080F              CHRIN=$FFCF
+00089  080F              CHROUT=$FFD2
+00090  080F              ;*********************************
+00091  080F              ;
+00092  080F              ; CROSSREF64 ENTRY POINT
+00093  080F              ;
+00094  080F              ;*********************************
+00095  080F  20 94 0D    XXREF  JSR SAVZPG
+00096  0812  4C 89 08           JMP XX0889
+00097  0815              ;********************************
+00098  0815              ; ZERO PAGE STORAGE
+00099  0815              ;********************************
+00100  0815  AA          ZPGSTR .BYTE $AA,$AA,$AA,$AA,$AA,$AA
+00100  0816  AA 
+00100  0817  AA 
+00100  0818  AA 
+00100  0819  AA 
+00100  081A  AA 
+00101  081B  AA                 .BYTE $AA,$AA,$AA,$AA,$AA,$AA
+00101  081C  AA 
+00101  081D  AA 
+00101  081E  AA 
+00101  081F  AA 
+
+
+
+
+
+
+CROSSREF64......PAGE 0004
+
+LINE# LOC   CODE        LINE
+
+
+00101  0820  AA 
+00102  0821  AA                 .BYTE $AA,$AA,$AA,$AA,$AA,$AA
+00102  0822  AA 
+00102  0823  AA 
+00102  0824  AA 
+00102  0825  AA 
+00102  0826  AA 
+00103  0827  AA                 .BYTE $AA,$AA,$AA,$AA,$AA,$AA
+00103  0828  AA 
+00103  0829  AA 
+00103  082A  AA 
+00103  082B  AA 
+00103  082C  AA 
+00104  082D              ;********************************
+00105  082D              ; 
+00106  082D              ;********************************
+00107  082D  AA          DEVIN  .BYTE $AA       ;XX082D INPUT DEVICE
+00108  082E  AA          XX082E .BYTE $AA
+00109  082F  AA          XX082F .BYTE $AA
+00110  0830  AA          PRTFLG .BYTE $AA       ;XX0830 HARDCOPY FLAG
+00111  0831  AA          XX0831 .BYTE $AA
+00112  0832  AA          XX0832 .BYTE $AA
+00113  0833              ;********************************
+00114  0833              ;
+00115  0833              ;********************************
+00116  0833  AA          XX0833 .BYTE $AA
+00117  0834  AA          XX0834 .BYTE $AA
+00118  0835  AA                 .BYTE $AA,$AA,$AA,$AA
+00118  0836  AA 
+00118  0837  AA 
+00118  0838  AA 
+00119  0839  AA                 .BYTE $AA,$AA,$AA,$AA
+00119  083A  AA 
+00119  083B  AA 
+00119  083C  AA 
+00120  083D  AA                 .BYTE $AA,$AA,$AA,$AA
+00120  083E  AA 
+00120  083F  AA 
+00120  0840  AA 
+00121  0841              ;********************************
+00122  0841              ;
+00123  0841              ;********************************
+00124  0841  AA          XX0841 .BYTE $AA
+00125  0842  AA                 .BYTE $AA,$AA
+00125  0843  AA 
+00126  0844              ;********************************
+00127  0844              ; CROSSREF FILENAME BUFFER
+00128  0844              ;********************************
+00129  0844  AA          XRFFNM .BYTE $AA       ;XX0844
+00130  0845  AA                 .BYTE $AA,$AA,$AA,$AA
+00130  0846  AA 
+00130  0847  AA 
+00130  0848  AA 
+00131  0849              ;********************************
+00132  0849              ;
+
+
+
+
+
+
+CROSSREF64......PAGE 0005
+
+LINE# LOC   CODE        LINE
+
+
+00133  0849              ;********************************
+00134  0849  AA          XX0849 .BYTE $AA
+00135  084A  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00135  084B  AA 
+00135  084C  AA 
+00135  084D  AA 
+00135  084E  AA 
+00136  084F  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00136  0850  AA 
+00136  0851  AA 
+00136  0852  AA 
+00136  0853  AA 
+00137  0854              ;********************************
+00138  0854              ;
+00139  0854              ;********************************
+00140  0854  AA          XX0854 .BYTE $AA
+00141  0855  AA          XX0855 .BYTE $AA
+00142  0856  AA          XX0856 .BYTE $AA
+00143  0857  AA          XX0857 .BYTE $AA
+00144  0858              ;********************************
+00145  0858              ;
+00146  0858              ;********************************
+00147  0858  AA          XX0858 .BYTE $AA
+00148  0859  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00148  085A  AA 
+00148  085B  AA 
+00148  085C  AA 
+00148  085D  AA 
+00149  085E  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00149  085F  AA 
+00149  0860  AA 
+00149  0861  AA 
+00149  0862  AA 
+00150  0863  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00150  0864  AA 
+00150  0865  AA 
+00150  0866  AA 
+00150  0867  AA 
+00151  0868  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00151  0869  AA 
+00151  086A  AA 
+00151  086B  AA 
+00151  086C  AA 
+00152  086D  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00152  086E  AA 
+00152  086F  AA 
+00152  0870  AA 
+00152  0871  AA 
+00153  0872  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00153  0873  AA 
+00153  0874  AA 
+00153  0875  AA 
+00153  0876  AA 
+00154  0877  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00154  0878  AA 
+
+
+
+
+
+
+CROSSREF64......PAGE 0006
+
+LINE# LOC   CODE        LINE
+
+
+00154  0879  AA 
+00154  087A  AA 
+00154  087B  AA 
+00155  087C  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00155  087D  AA 
+00155  087E  AA 
+00155  087F  AA 
+00155  0880  AA 
+00156  0881  AA                 .BYTE $AA,$AA,$AA,$AA,$AA
+00156  0882  AA 
+00156  0883  AA 
+00156  0884  AA 
+00156  0885  AA 
+00157  0886  AA                 .BYTE $AA,$AA,$AA
+00157  0887  AA 
+00157  0888  AA 
+00158  0889              ;********************************
+00159  0889              ;
+00160  0889              ;********************************
+00161  0889  D8          XX0889 CLD 
+00162  088A  A9 00              LDA #$00
+00163  088C  8D 33 08           STA XX0833
+00164  088F  8D 31 08           STA XX0831
+00165  0892  8D 32 08           STA XX0832
+00166  0895  EE 31 08           INC XX0831
+00167  0898  8D 2D 08           STA DEVIN
+00168  089B  85 18              STA $18
+00169  089D  85 19              STA $19
+00170  089F              ;********************************
+00171  089F              ; OPEN I/O TO KEYBOARD
+00172  089F              ;********************************
+00173  089F  A9 05              LDA #$05
+00174  08A1  A2 00              LDX #$00
+00175  08A3  A0 FF              LDY #$FF
+00176  08A5  20 BA FF           JSR SETLFS
+00177  08A8  A9 00              LDA #$00
+00178  08AA  20 BD FF           JSR SETNAM
+00179  08AD  20 C0 FF           JSR OPEN
+00180  08B0              ;********************************
+00181  08B0              ; OPEN I/O TO SCREEN
+00182  08B0              ;********************************
+00183  08B0  A9 01              LDA #$01
+00184  08B2  A2 03              LDX #$03
+00185  08B4  A0 FF              LDY #$FF
+00186  08B6  20 BA FF           JSR SETLFS
+00187  08B9  A9 00              LDA #$00
+00188  08BB  20 BD FF           JSR SETNAM
+00189  08BE  20 C0 FF           JSR OPEN
+00190  08C1              ;********************************
+00191  08C1              ;
+00192  08C1              ;********************************
+00193  08C1  A9 93              LDA #$93        ;SCREEN CLEAR
+00194  08C3  20 D2 FF           JSR CHROUT
+00195  08C6              ;********************************
+00196  08C6              ; SET INPUT CHANNEL TO KEYBOARD
+
+
+
+
+
+
+CROSSREF64......PAGE 0007
+
+LINE# LOC   CODE        LINE
+
+
+00197  08C6              ;********************************
+00198  08C6  A2 05              LDX #$05
+00199  08C8  8E 2D 08           STX DEVIN
+00200  08CB  20 C6 FF           JSR CHKIN
+00201  08CE              ;********************************
+00202  08CE              ; PROMPT FOR HARDCOPY
+00203  08CE              ;********************************
+00204  08CE  A9 0D              LDA #>MESSG     ;$0D
+00205  08D0  A0 13              LDY #<MESSG     ;$13
+00206  08D2  20 7E 0C           JSR XX0C7E
+00207  08D5              ;********************************
+00208  08D5              ; GET RESPONSE
+00209  08D5              ;********************************
+00210  08D5  20 CF FF           JSR CHRIN
+00211  08D8  A2 00              LDX #$00
+00212  08DA  8E 30 08           STX PRTFLG
+00213  08DD  C9 4E              CMP #$4E        ;'N'
+00214  08DF  F0 02              BEQ XX08E3
+00215  08E1  A2 80              LDX #$80
+00216  08E3              ;********************************
+00217  08E3              ;
+00218  08E3              ;********************************
+00219  08E3  8E 30 08    XX08E3 STX PRTFLG
+00220  08E6              ;********************************
+00221  08E6              ; OPEN I/O TO PRINTER
+00222  08E6              ;********************************
+00223  08E6  A9 04              LDA #$04
+00224  08E8  AA                 TAX 
+00225  08E9  A0 FF              LDY #$FF
+00226  08EB  20 BA FF           JSR SETLFS
+00227  08EE  A9 00              LDA #$00
+00228  08F0  20 BD FF           JSR SETNAM
+00229  08F3  20 C0 FF           JSR OPEN
+00230  08F6              ;********************************
+00231  08F6              ;
+00232  08F6              ;********************************
+00233  08F6  20 7D 0D           JSR SCROFF
+00234  08F9  A9 0D              LDA #$0D
+00235  08FB  20 D2 FF           JSR CHROUT
+00236  08FE              ;********************************
+00237  08FE              ; OPEN I/O TO DISK STATUS
+00238  08FE              ;********************************
+00239  08FE  A9 07              LDA #$07
+00240  0900  A2 08              LDX #$08
+00241  0902  A0 0F              LDY #$0F
+00242  0904  20 BA FF           JSR SETLFS
+00243  0907              ;********************************
+00244  0907              ; FILENAME = 'I0' FOR INIT DRIVE
+00245  0907              ;********************************
+00246  0907  A9 49              LDA #$49        ;'I'
+00247  0909  8D 57 08           STA XX0857
+00248  090C  A9 30              LDA #$30        ;'0'
+00249  090E  8D 58 08           STA XX0858
+00250  0911              ;
+00251  0911  A2 57              LDX #<XX0857    ;#$57      ;'W'
+
+
+
+
+
+
+CROSSREF64......PAGE 0008
+
+LINE# LOC   CODE        LINE
+
+
+00252  0913  A0 08              LDY #>XX0857    ;#$08
+00253  0915  A9 02              LDA #$02
+00254  0917  20 BD FF           JSR SETNAM
+00255  091A              ;
+00256  091A  20 C0 FF           JSR OPEN
+00257  091D              ;********************************
+00258  091D              ;
+00259  091D              ;********************************
+00260  091D  A9 00              LDA #$00
+00261  091F  A0 02              LDY #$02
+00262  0921  8D 2E 08           STA XX082E
+00263  0924  8C 2F 08           STY XX082F
+00264  0927              ;********************************
+00265  0927              ; LOAD FILENAME BUFFER FROM MASTER
+00266  0927              ; 0:XRFF0000,S,W
+00267  0927              ;********************************
+00268  0927  A0 00              LDY #$00
+00269  0929  B9 4B 0D    XX0929 LDA XRFF00,Y    ;XX0D4B
+00270  092C  99 44 08           STA XRFFNM,Y    ;XX0844
+00271  092F  C8                 INY 
+00272  0930  C0 0E              CPY #$0E
+00273  0932  D0 F5              BNE XX0929
+00274  0934  20 E4 0C           JSR XX0CE4
+00275  0937              ;********************************
+00276  0937              ; CLEAR I/O CHANNEL
+00277  0937              ;********************************
+00278  0937  20 CC FF           JSR CLRCHN
+00279  093A              ;********************************
+00280  093A              ; OPEN CROSS REFERNCE FILE
+00281  093A              ;********************************
+00282  093A  A9 08              LDA #$08
+00283  093C  AA                 TAX 
+00284  093D  A8                 TAY 
+00285  093E  20 BA FF           JSR SETLFS
+00286  0941  A2 3D              LDX #<XRLL00    ;$3D
+00287  0943  A0 0D              LDY #>XRLL00    ;$0D
+00288  0945  A9 0E              LDA #$0E        ;14 CHARS
+00289  0947  20 BD FF           JSR SETNAM
+00290  094A  20 C0 FF           JSR OPEN
+00291  094D              ;********************************
+00292  094D              ;
+00293  094D              ;********************************
+00294  094D  20 25 0C           JSR XX0C25
+00295  0950  A5 18       XX0950 LDA $18
+00296  0952  A4 19              LDY $19
+00297  0954  85 16              STA $16
+00298  0956  84 17              STY $17
+00299  0958  18                 CLC 
+00300  0959  A5 16              LDA $16
+00301  095B  6D 2E 08           ADC XX082E
+00302  095E  85 18              STA $18
+00303  0960  A5 17              LDA $17
+00304  0962  6D 2F 08           ADC XX082F
+00305  0965  85 19              STA $19
+00306  0967              ;
+
+
+
+
+
+
+CROSSREF64......PAGE 0009
+
+LINE# LOC   CODE        LINE
+
+
+00307  0967  A9 AA              LDA #<XX0DAA    ;#$AA
+00308  0969  A0 0D              LDY #>XX0DAA    ;#$0D
+00309  096B  85 04              STA XRLPNT
+00310  096D  84 05              STY XRLPNT+1
+00311  096F              ;
+00312  096F  A9 AA              LDA #<XX15AA    ;#$AA
+00313  0971  A0 15              LDY #>XX15AA    ;#$15
+00314  0973  85 06              STA XRFPNT
+00315  0975  84 07              STY XRFPNT+1
+00316  0977              ;
+00317  0977  A5 04              LDA XRLPNT
+00318  0979  A4 05              LDY XRLPNT+1
+00319  097B  85 0C              STA $0C
+00320  097D  84 0D              STY $0D
+00321  097F  A0 00              LDY #$00
+00322  0981  98          XX0981 TYA 
+00323  0982  91 0C              STA ($0C),Y
+00324  0984  E6 0C              INC $0C
+00325  0986  D0 02              BNE XX098A
+00326  0988  E6 0D              INC $0D
+00327  098A  A5 0D       XX098A LDA $0D
+00328  098C  C5 07              CMP XRFPNT+1
+00329  098E  D0 F1              BNE XX0981
+00330  0990  A5 0C              LDA $0C
+00331  0992  C5 06              CMP XRFPNT
+00332  0994  D0 EB              BNE XX0981
+00333  0996  A0 0D              LDY #$0D
+00334  0998  B9 44 08    XX0998 LDA XRFFNM,Y
+00335  099B  99 34 08           STA XX0834,Y
+00336  099E  88                 DEY 
+00337  099F  10 F7              BPL XX0998
+00338  09A1  A9 52              LDA #$52        ;'R'
+00339  09A3  8D 41 08           STA XX0841
+00340  09A6  A2 04              LDX #$04
+00341  09A8  FE 49 08    XX09A8 INC XX0849,X
+00342  09AB  BD 49 08           LDA XX0849,X
+00343  09AE  C9 3A              CMP #$3A        ;':'
+00344  09B0  D0 08              BNE XX09BA
+00345  09B2  A9 30              LDA #$30        ;'0'
+00346  09B4  9D 49 08           STA XX0849,X
+00347  09B7  CA                 DEX 
+00348  09B8  D0 EE              BNE XX09A8
+00349  09BA              ;
+00350  09BA  A9 09       XX09BA LDA #$09
+00351  09BC  A2 08              LDX #$08
+00352  09BE  A8                 TAY 
+00353  09BF  20 BA FF           JSR SETLFS
+00354  09C2  A2 34              LDX #<XX0834    ;#$34      ;'4'
+00355  09C4  A0 08              LDY #>XX0834    ;#$08
+00356  09C6  A9 0E              LDA #$0E
+00357  09C8  20 BD FF           JSR SETNAM
+00358  09CB  20 C0 FF           JSR OPEN
+00359  09CE  20 25 0C           JSR XX0C25
+00360  09D1              ;
+00361  09D1  A9 0A              LDA #$0A
+
+
+
+
+
+
+CROSSREF64......PAGE 0010
+
+LINE# LOC   CODE        LINE
+
+
+00362  09D3  A2 08              LDX #$08
+00363  09D5  A8                 TAY 
+00364  09D6  20 BA FF           JSR SETLFS
+00365  09D9  A2 44              LDX #<XRFFNM    ;#$44      ;'D'
+00366  09DB  A0 08              LDY #>XRFFNM    ;#$08
+00367  09DD  A9 0E              LDA #$0E
+00368  09DF  20 BD FF           JSR SETNAM
+00369  09E2  20 C0 FF           JSR OPEN
+00370  09E5  20 25 0C           JSR XX0C25
+00371  09E8              ;
+00372  09E8  A9 00              LDA #$00
+00373  09EA  85 15              STA $15
+00374  09EC  A2 09       XX09EC LDX #$09
+00375  09EE  EC 2D 08           CPX DEVIN
+00376  09F1  F0 0B              BEQ XX09FE
+00377  09F3  8E 2D 08           STX DEVIN
+00378  09F6  20 CC FF           JSR CLRCHN
+00379  09F9              ;
+00380  09F9  A2 09              LDX #$09
+00381  09FB  20 C6 FF           JSR CHKIN
+00382  09FE              ;
+00383  09FE  20 CF FF    XX09FE JSR CHRIN
+00384  0A01  85 08              STA $08
+00385  0A03  20 CF FF           JSR CHRIN
+00386  0A06  85 09              STA $09
+00387  0A08  20 CF FF           JSR CHRIN
+00388  0A0B  85 0A              STA $0A
+00389  0A0D  20 CF FF           JSR CHRIN
+00390  0A10              ;
+00391  0A10  85 0B              STA $0B
+00392  0A12  A5 90              LDA $90
+00393  0A14  85 15              STA $15
+00394  0A16  38                 SEC 
+00395  0A17  A5 08              LDA $08
+00396  0A19  E5 16              SBC $16
+00397  0A1B  A5 09              LDA $09
+00398  0A1D  E5 17              SBC $17
+00399  0A1F  90 0A              BCC XX0A2B
+00400  0A21  A5 08              LDA $08
+00401  0A23  E5 18              SBC $18
+00402  0A25  A5 09              LDA $09
+00403  0A27  E5 19              SBC $19
+00404  0A29  90 22              BCC XX0A4D
+00405  0A2B              ;
+00406  0A2B  20 CC FF    XX0A2B JSR CLRCHN
+00407  0A2E  A2 0A              LDX #$0A
+00408  0A30  8E 2D 08           STX DEVIN
+00409  0A33  20 C9 FF           JSR CHKOUT
+00410  0A36              ;
+00411  0A36  A5 08              LDA $08
+00412  0A38  20 D2 FF           JSR CHROUT
+00413  0A3B  A5 09              LDA $09
+00414  0A3D  20 D2 FF           JSR CHROUT
+00415  0A40  A5 0A              LDA $0A
+00416  0A42  20 D2 FF           JSR CHROUT
+
+
+
+
+
+
+CROSSREF64......PAGE 0011
+
+LINE# LOC   CODE        LINE
+
+
+00417  0A45  A5 0B              LDA $0B
+00418  0A47  20 D2 FF           JSR CHROUT
+00419  0A4A  4C BB 0A           JMP XX0ABB
+00420  0A4D              ;********************************
+00421  0A4D              ;
+00422  0A4D              ;********************************
+00423  0A4D  38          XX0A4D SEC 
+00424  0A4E  A5 08              LDA $08
+00425  0A50  E5 16              SBC $16
+00426  0A52  85 0C              STA $0C
+00427  0A54  A5 09              LDA $09
+00428  0A56  E5 17              SBC $17
+00429  0A58  06 0C              ASL $0C
+00430  0A5A  2A                 ROL A
+00431  0A5B  06 0C              ASL $0C
+00432  0A5D  2A                 ROL A
+00433  0A5E  85 0D              STA $0D
+00434  0A60  18                 CLC 
+00435  0A61  A5 0C              LDA $0C
+00436  0A63  65 04              ADC XRLPNT
+00437  0A65  85 0C              STA $0C
+00438  0A67  A5 0D              LDA $0D
+00439  0A69  65 05              ADC XRLPNT+1
+00440  0A6B  85 0D              STA $0D
+00441  0A6D  A0 01              LDY #$01
+00442  0A6F  B1 0C              LDA ($0C),Y
+00443  0A71  D0 16              BNE XX0A89
+00444  0A73  88                 DEY 
+00445  0A74  A5 06              LDA XRFPNT
+00446  0A76  91 0C              STA ($0C),Y
+00447  0A78  C8                 INY 
+00448  0A79  A5 07              LDA XRFPNT+1
+00449  0A7B  91 0C              STA ($0C),Y
+00450  0A7D  C8                 INY 
+00451  0A7E  A5 06              LDA XRFPNT
+00452  0A80  91 0C              STA ($0C),Y
+00453  0A82  C8                 INY 
+00454  0A83  A5 07              LDA XRFPNT+1
+00455  0A85  91 0C              STA ($0C),Y
+00456  0A87  D0 17              BNE XX0AA0
+00457  0A89  88          XX0A89 DEY 
+00458  0A8A  B1 0C              LDA ($0C),Y
+00459  0A8C  85 0E              STA $0E
+00460  0A8E  C8                 INY 
+00461  0A8F  B1 0C              LDA ($0C),Y
+00462  0A91  85 0F              STA $0F
+00463  0A93  A5 07              LDA XRFPNT+1
+00464  0A95  91 0C              STA ($0C),Y
+00465  0A97  91 0E              STA ($0E),Y
+00466  0A99  88                 DEY 
+00467  0A9A  A5 06              LDA XRFPNT
+00468  0A9C  91 0C              STA ($0C),Y
+00469  0A9E  91 0E              STA ($0E),Y
+00470  0AA0  A0 01       XX0AA0 LDY #$01
+00471  0AA2  A9 00              LDA #$00
+
+
+
+
+
+
+CROSSREF64......PAGE 0012
+
+LINE# LOC   CODE        LINE
+
+
+00472  0AA4  91 06              STA (XRFPNT),Y
+00473  0AA6  C8                 INY 
+00474  0AA7  A5 0A              LDA $0A
+00475  0AA9  91 06              STA (XRFPNT),Y
+00476  0AAB  C8                 INY 
+00477  0AAC  A5 0B              LDA $0B
+00478  0AAE  91 06              STA (XRFPNT),Y
+00479  0AB0  18                 CLC 
+00480  0AB1  A5 06              LDA XRFPNT
+00481  0AB3  69 04              ADC #$04
+00482  0AB5  85 06              STA XRFPNT
+00483  0AB7  90 02              BCC XX0ABB
+00484  0AB9  E6 07              INC XRFPNT+1
+00485  0ABB  A5 15       XX0ABB LDA $15
+00486  0ABD  D0 03              BNE XX0AC2
+00487  0ABF  4C EC 09           JMP XX09EC
+00488  0AC2              ;********************************
+00489  0AC2              ;
+00490  0AC2              ;********************************
+00491  0AC2  A9 09       XX0AC2 LDA #$09
+00492  0AC4  20 C3 FF           JSR CLOSE
+00493  0AC7  A9 0A              LDA #$0A
+00494  0AC9  20 C3 FF           JSR CLOSE
+00495  0ACC              ;********************************
+00496  0ACC              ;
+00497  0ACC              ;********************************
+00498  0ACC  A0 01       XX0ACC LDY #$01
+00499  0ACE  B1 04              LDA (XRLPNT),Y
+00500  0AD0  A0 03              LDY #$03
+00501  0AD2  D1 04              CMP (XRLPNT),Y
+00502  0AD4  D0 0E              BNE XX0AE4
+00503  0AD6  A0 00              LDY #$00
+00504  0AD8  B1 04              LDA (XRLPNT),Y
+00505  0ADA  A0 02              LDY #$02
+00506  0ADC  D1 04              CMP (XRLPNT),Y
+00507  0ADE  D0 04              BNE XX0AE4
+00508  0AE0  A9 2A              LDA #$2A        ;'*'
+00509  0AE2  D0 02              BNE XX0AE6
+00510  0AE4  A9 20       XX0AE4 LDA #$20        ;' '
+00511  0AE6  20 F8 0B    XX0AE6 JSR PCHAR
+00512  0AE9  20 F6 0B           JSR XX0BF6
+00513  0AEC  A0 06              LDY #$06
+00514  0AEE  20 8C 0B    XX0AEE JSR XX0B8C
+00515  0AF1  20 F8 0B           JSR PCHAR
+00516  0AF4  88                 DEY 
+00517  0AF5  D0 F7              BNE XX0AEE
+00518  0AF7  20 F6 0B           JSR XX0BF6
+00519  0AFA  A9 24              LDA #$24        ;'$'
+00520  0AFC  20 F8 0B           JSR PCHAR
+00521  0AFF  20 8C 0B           JSR XX0B8C
+00522  0B02  20 A9 0C           JSR XX0CA9
+00523  0B05  20 8C 0B           JSR XX0B8C
+00524  0B08  A6 90              LDX $90
+00525  0B0A  86 14              STX $14
+00526  0B0C  20 A9 0C           JSR XX0CA9
+
+
+
+
+
+
+CROSSREF64......PAGE 0013
+
+LINE# LOC   CODE        LINE
+
+
+00527  0B0F  A0 02              LDY #$02
+00528  0B11  B1 04              LDA (XRLPNT),Y
+00529  0B13  AA                 TAX 
+00530  0B14  C8                 INY 
+00531  0B15  B1 04              LDA (XRLPNT),Y
+00532  0B17  86 0C              STX $0C
+00533  0B19  85 0D              STA $0D
+00534  0B1B  D0 2C              BNE XX0B49
+00535  0B1D  20 F6 0B    XX0B1D JSR XX0BF6
+00536  0B20  A0 02              LDY #$02
+00537  0B22  B1 0C              LDA ($0C),Y
+00538  0B24  AA                 TAX 
+00539  0B25  C8                 INY 
+00540  0B26  B1 0C              LDA ($0C),Y
+00541  0B28  20 A1 0B           JSR XX0BA1
+00542  0B2B  A0 01              LDY #$01
+00543  0B2D  B1 0C              LDA ($0C),Y
+00544  0B2F  AA                 TAX 
+00545  0B30  F0 1E              BEQ XX0B50
+00546  0B32  88                 DEY 
+00547  0B33  B1 0C              LDA ($0C),Y
+00548  0B35  85 0C              STA $0C
+00549  0B37  86 0D              STX $0D
+00550  0B39  CE 54 08           DEC XX0854
+00551  0B3C  D0 DF              BNE XX0B1D
+00552  0B3E  20 D4 0C           JSR XX0CD4
+00553  0B41  A2 07              LDX #$07
+00554  0B43  20 F3 0B    XX0B43 JSR XX0BF3
+00555  0B46  CA                 DEX 
+00556  0B47  D0 FA              BNE XX0B43
+00557  0B49  A0 0A       XX0B49 LDY #$0A
+00558  0B4B  8C 54 08           STY XX0854
+00559  0B4E  D0 CD              BNE XX0B1D
+00560  0B50  20 D4 0C    XX0B50 JSR XX0CD4
+00561  0B53  A5 14              LDA $14
+00562  0B55  D0 1F              BNE XX0B76
+00563  0B57  18                 CLC 
+00564  0B58  A5 04              LDA XRLPNT
+00565  0B5A  69 04              ADC #$04
+00566  0B5C  85 04              STA XRLPNT
+00567  0B5E  90 02              BCC XX0B62
+00568  0B60  E6 05              INC XRLPNT+1
+00569  0B62  38          XX0B62 SEC 
+00570  0B63  A5 04              LDA XRLPNT
+00571  0B65  E9 AA              SBC #<XX15AA    ;#$AA
+00572  0B67  A5 05              LDA XRLPNT+1
+00573  0B69  E9 15              SBC #>XX15AA    ;#$15
+00574  0B6B  B0 03              BCS XX0B70
+00575  0B6D  4C CC 0A           JMP XX0ACC
+00576  0B70              ;********************************
+00577  0B70              ;
+00578  0B70              ;********************************
+00579  0B70  20 CC FF    XX0B70 JSR CLRCHN
+00580  0B73  4C 50 09           JMP XX0950
+00581  0B76              ;********************************
+
+
+
+
+
+
+CROSSREF64......PAGE 0014
+
+LINE# LOC   CODE        LINE
+
+
+00582  0B76              ;
+00583  0B76              ;********************************
+00584  0B76  20 C1 0C    XX0B76 JSR XX0CC1
+00585  0B79  20 C1 0C           JSR XX0CC1
+00586  0B7C  A9 04              LDA #$04
+00587  0B7E  20 C3 FF           JSR CLOSE
+00588  0B81  A9 08              LDA #$08
+00589  0B83  20 C3 FF           JSR CLOSE
+00590  0B86  20 CC FF           JSR CLRCHN
+00591  0B89  4C 75 0C           JMP XX0C75
+00592  0B8C              ;********************************
+00593  0B8C              ; SET INPUT TO CHANNEL 8 AND READ IN CHAR
+00594  0B8C              ;********************************
+00595  0B8C  A2 08       XX0B8C LDX #$08
+00596  0B8E  EC 2D 08           CPX DEVIN
+00597  0B91  F0 0B              BEQ XX0B9E
+00598  0B93  8E 2D 08           STX DEVIN
+00599  0B96  20 CC FF           JSR CLRCHN
+00600  0B99  A2 08              LDX #$08
+00601  0B9B  20 C6 FF           JSR CHKIN
+00602  0B9E  4C CF FF    XX0B9E JMP CHRIN
+00603  0BA1              ;********************************
+00604  0BA1              ;
+00605  0BA1              ;********************************
+00606  0BA1  86 10       XX0BA1 STX $10
+00607  0BA3  85 11              STA $11
+00608  0BA5  A9 00              LDA #$00
+00609  0BA7  8D 55 08           STA XX0855
+00610  0BAA  A2 04              LDX #$04
+00611  0BAC  8E 56 08           STX XX0856
+00612  0BAF  AE 56 08    XX0BAF LDX XX0856
+00613  0BB2  A0 30              LDY #$30        ;'0'
+00614  0BB4  D0 04              BNE XX0BBA
+00615  0BB6  C8          XX0BB6 INY 
+00616  0BB7  8C 55 08           STY XX0855
+00617  0BBA  38          XX0BBA SEC 
+00618  0BBB  A5 10              LDA $10
+00619  0BBD  FD 73 0D           SBC XX0D73,X
+00620  0BC0  85 10              STA $10
+00621  0BC2  A5 11              LDA $11
+00622  0BC4  FD 78 0D           SBC XX0D78,X
+00623  0BC7  85 11              STA $11
+00624  0BC9  B0 EB              BCS XX0BB6
+00625  0BCB  A5 10              LDA $10
+00626  0BCD  7D 73 0D           ADC XX0D73,X
+00627  0BD0  85 10              STA $10
+00628  0BD2  A5 11              LDA $11
+00629  0BD4  7D 78 0D           ADC XX0D78,X
+00630  0BD7  85 11              STA $11
+00631  0BD9  98                 TYA 
+00632  0BDA  C9 30              CMP #$30        ;'0'
+00633  0BDC  D0 07              BNE XX0BE5
+00634  0BDE  AC 55 08           LDY XX0855
+00635  0BE1  D0 02              BNE XX0BE5
+00636  0BE3  A9 20              LDA #$20        ;' '
+
+
+
+
+
+
+CROSSREF64......PAGE 0015
+
+LINE# LOC   CODE        LINE
+
+
+00637  0BE5  20 F8 0B    XX0BE5 JSR PCHAR
+00638  0BE8  CE 56 08           DEC XX0856
+00639  0BEB  10 C2              BPL XX0BAF
+00640  0BED  60                 RTS 
+00641  0BEE              ;********************************
+00642  0BEE              ; OUTPUT CR
+00643  0BEE              ;********************************
+00644  0BEE  A9 0D       PRTCR  LDA #$0D
+00645  0BF0  4C F8 0B           JMP PCHAR
+00646  0BF3              ;********************************
+00647  0BF3              ;
+00648  0BF3              ;********************************
+00649  0BF3  20 F6 0B    XX0BF3 JSR XX0BF6
+00650  0BF6  A9 20       XX0BF6 LDA #$20        ;' '
+00651  0BF8              ;********************************
+00652  0BF8              ; OUTPUT CHAR TO SCREEN OR PRINTER
+00653  0BF8              ;********************************
+00654  0BF8  86 12       PCHAR  STX $12
+00655  0BFA  84 13              STY $13
+00656  0BFC  48                 PHA 
+00657  0BFD  2C 30 08           BIT PRTFLG
+00658  0C00  10 1A              BPL XX0C1C
+00659  0C02  AD 2D 08           LDA DEVIN
+00660  0C05  C9 04              CMP #$04
+00661  0C07  F0 0B              BEQ XX0C14
+00662  0C09  20 CC FF           JSR CLRCHN
+00663  0C0C  A2 04              LDX #$04
+00664  0C0E  8E 2D 08           STX DEVIN
+00665  0C11  20 C9 FF           JSR CHKOUT
+00666  0C14  68          XX0C14 PLA 
+00667  0C15  48                 PHA 
+00668  0C16  20 D2 FF           JSR CHROUT
+00669  0C19  4C 1F 0C           JMP XX0C1F
+00670  0C1C              ;********************************
+00671  0C1C              ; PRINT CHAR TO SCREEN
+00672  0C1C              ;********************************
+00673  0C1C  20 16 E7    XX0C1C JSR PRTCHR
+00674  0C1F              ;********************************
+00675  0C1F              ; RESTORE A,X AND Y
+00676  0C1F              ;********************************
+00677  0C1F  68          XX0C1F PLA 
+00678  0C20  A4 13              LDY $13
+00679  0C22  A6 12              LDX $12
+00680  0C24  60                 RTS 
+00681  0C25              ;********************************
+00682  0C25              ; DISK I/O ERROR
+00683  0C25              ;********************************
+00684  0C25  20 CC FF    XX0C25 JSR CLRCHN
+00685  0C28  A2 07              LDX #$07
+00686  0C2A  8E 2D 08           STX DEVIN
+00687  0C2D  20 C6 FF           JSR CHKIN
+00688  0C30  20 CF FF           JSR CHRIN
+00689  0C33  85 02              STA $02
+00690  0C35  20 CF FF           JSR CHRIN
+00691  0C38  85 03              STA $03
+
+
+
+
+
+
+CROSSREF64......PAGE 0016
+
+LINE# LOC   CODE        LINE
+
+
+00692  0C3A  C9 30              CMP #$30        ;'0'
+00693  0C3C  D0 0E              BNE XX0C4C
+00694  0C3E  A5 02              LDA $02
+00695  0C40  C9 30              CMP #$30        ;'0'
+00696  0C42  D0 08              BNE XX0C4C
+00697  0C44  20 CF FF    XX0C44 JSR CHRIN
+00698  0C47  C9 0D              CMP #$0D
+00699  0C49  D0 F9              BNE XX0C44
+00700  0C4B  60                 RTS 
+00701  0C4C              ;********************************
+00702  0C4C              ; PRINT DISK ERROR
+00703  0C4C              ;********************************
+00704  0C4C  A2 01       XX0C4C LDX #$01
+00705  0C4E  B5 02       XX0C4E LDA $02,X
+00706  0C50  9D 57 08           STA XX0857,X
+00707  0C53  CA                 DEX 
+00708  0C54  10 F8              BPL XX0C4E
+00709  0C56  A0 02              LDY #$02
+00710  0C58  84 13       XX0C58 STY $13
+00711  0C5A  20 CF FF           JSR CHRIN
+00712  0C5D  C9 0D              CMP #$0D
+00713  0C5F  F0 08              BEQ XX0C69
+00714  0C61  A4 13              LDY $13
+00715  0C63  99 57 08           STA XX0857,Y
+00716  0C66  C8                 INY 
+00717  0C67  D0 EF              BNE XX0C58
+00718  0C69  A9 8D       XX0C69 LDA #$8D
+00719  0C6B  99 57 08           STA XX0857,Y
+00720  0C6E  A9 08              LDA #>XX0857    ;#$08
+00721  0C70  A0 57              LDY #<XX0857    ;#$57      ;'W'
+00722  0C72  20 7E 0C           JSR XX0C7E
+00723  0C75  20 8B 0D    XX0C75 JSR SCRON
+00724  0C78  20 9F 0D           JSR RETZPG
+00725  0C7B  4C 86 E3           JMP BASSFT
+00726  0C7E              ;********************************
+00727  0C7E              ;
+00728  0C7E              ;********************************
+00729  0C7E  48          XX0C7E PHA 
+00730  0C7F  A9 01              LDA #$01
+00731  0C81  CD 2D 08           CMP DEVIN
+00732  0C84  F0 0F              BEQ XX0C95
+00733  0C86  98                 TYA 
+00734  0C87  48                 PHA 
+00735  0C88  20 CC FF           JSR CLRCHN
+00736  0C8B  A2 01              LDX #$01
+00737  0C8D  8E 2D 08           STX DEVIN
+00738  0C90  20 C9 FF           JSR CHKOUT
+00739  0C93  68                 PLA 
+00740  0C94  A8                 TAY 
+00741  0C95              ;********************************
+00742  0C95              ; OUTPUT STRING
+00743  0C95              ; HIGH BYTE ADDRESS IN A
+00744  0C95              ; LOW BYTE ADDRESS IN Y
+00745  0C95              ;********************************
+00746  0C95  68          XX0C95 PLA 
+
+
+
+
+
+
+CROSSREF64......PAGE 0017
+
+LINE# LOC   CODE        LINE
+
+
+00747  0C96  85 11              STA $11
+00748  0C98  84 10              STY $10
+00749  0C9A  A0 00              LDY #$00
+00750  0C9C  B1 10       XX0C9C LDA ($10),Y
+00751  0C9E  C8                 INY 
+00752  0C9F  48                 PHA 
+00753  0CA0  29 7F              AND #$7F
+00754  0CA2  20 D2 FF           JSR CHROUT
+00755  0CA5  68                 PLA 
+00756  0CA6  10 F4              BPL XX0C9C
+00757  0CA8  60                 RTS 
+00758  0CA9              ;********************************
+00759  0CA9              ;
+00760  0CA9              ;********************************
+00761  0CA9  48          XX0CA9 PHA 
+00762  0CAA  4A                 LSR A
+00763  0CAB  4A                 LSR A
+00764  0CAC  4A                 LSR A
+00765  0CAD  4A                 LSR A
+00766  0CAE  20 B4 0C           JSR XX0CB4
+00767  0CB1  68                 PLA 
+00768  0CB2  29 0F              AND #$0F
+00769  0CB4  18          XX0CB4 CLC 
+00770  0CB5  69 30              ADC #$30        ;'0'
+00771  0CB7  C9 3A              CMP #$3A        ;':'
+00772  0CB9  30 03              BMI XX0CBE
+00773  0CBB  18                 CLC 
+00774  0CBC  69 07              ADC #$07
+00775  0CBE  4C F8 0B    XX0CBE JMP PCHAR
+00776  0CC1              ;********************************
+00777  0CC1              ;
+00778  0CC1              ;********************************
+00779  0CC1  20 EE 0B    XX0CC1 JSR PRTCR
+00780  0CC4  EE 33 08           INC XX0833
+00781  0CC7  AD 33 08           LDA XX0833
+00782  0CCA  C9 42              CMP #$42        ;'B'
+00783  0CCC  D0 F3              BNE XX0CC1
+00784  0CCE  A9 00              LDA #$00
+00785  0CD0  8D 33 08           STA XX0833
+00786  0CD3  60                 RTS 
+00787  0CD4              ;********************************
+00788  0CD4              ;
+00789  0CD4              ;********************************
+00790  0CD4  20 EE 0B    XX0CD4 JSR PRTCR
+00791  0CD7  EE 33 08           INC XX0833
+00792  0CDA  AD 33 08           LDA XX0833
+00793  0CDD  C9 3C              CMP #$3C        ;'<'
+00794  0CDF  D0 31              BNE XX0D12
+00795  0CE1  20 C1 0C           JSR XX0CC1
+00796  0CE4  20 D4 0C    XX0CE4 JSR XX0CD4
+00797  0CE7  8A                 TXA 
+00798  0CE8  48                 PHA 
+00799  0CE9              ;********************************
+00800  0CE9              ; PRINT PAGE BANNER
+00801  0CE9              ;********************************
+
+
+
+
+
+
+CROSSREF64......PAGE 0018
+
+LINE# LOC   CODE        LINE
+
+
+00802  0CE9  A2 00              LDX #$00
+00803  0CEB  BD 59 0D    XX0CEB LDA BANNER,X
+00804  0CEE  F0 06              BEQ XX0CF6      ; ZERO BYTE END OF STRING
+00805  0CF0  20 F8 0B           JSR PCHAR
+00806  0CF3  E8                 INX             ; INC CHAR POINTER
+00807  0CF4  D0 F5              BNE XX0CEB
+00808  0CF6              ;
+00809  0CF6  AE 31 08    XX0CF6 LDX XX0831
+00810  0CF9  AD 32 08           LDA XX0832
+00811  0CFC  20 A1 0B           JSR XX0BA1
+00812  0CFF  EE 31 08           INC XX0831
+00813  0D02  D0 03              BNE XX0D07
+00814  0D04  EE 32 08           INC XX0832
+00815  0D07  20 D4 0C    XX0D07 JSR XX0CD4
+00816  0D0A  20 D4 0C           JSR XX0CD4
+00817  0D0D  20 D4 0C           JSR XX0CD4
+00818  0D10  68                 PLA 
+00819  0D11  AA                 TAX 
+00820  0D12  60          XX0D12 RTS 
+00821  0D13              ;********************************
+00822  0D13              ;
+00823  0D13              ;********************************
+00824  0D13              ;XX0D13
+00825  0D13  0D          MESSG  .BYTE $0D
+00826  0D14  43 52       XX0D14 .BYTE 'CROSS REFERENCE'
+00827  0D23  0D          XX0D23 .BYTE $0D
+00828  0D24  0D          XX0D24 .BYTE $0D
+00829  0D25  0D          XX0D25 .BYTE $0D
+00830  0D26  48 41       XX0D26 .BYTE 'HARD COPY (CR/Y OR N)?'
+00831  0D3C              ;********************************
+00832  0D3C              ;
+00833  0D3C              ;********************************
+00834  0D3C  A0          XX0D3C .BYTE $A0
+00835  0D3D              ;********************************
+00836  0D3D              ; CROSSREF FILE MASTER NAME
+00837  0D3D              ;********************************
+00838  0D3D  30 3A       XRLL00 .BYTE '0:XRLL0000,S,R' ;XX0D3D
+00839  0D4B              ;********************************
+00840  0D4B              ; CROSSREF FILE MASTER NAME
+00841  0D4B              ;********************************
+00842  0D4B  30 3A       XRFF00 .BYTE '0:XRFF0000,S,W' ;XX0D4B
+00843  0D59              ;********************************
+00844  0D59              ;
+00845  0D59              ;********************************
+00846  0D59  43 52       BANNER .BYTE 'CROSS REFERENCE......PAGE'
+00847  0D72  00                 .BYTE $00
+00848  0D73              ;********************************
+00849  0D73              ; LOW BYTE 10'S DIGIT
+00850  0D73              ; $0001 = 1
+00851  0D73              ; $000A = 10
+00852  0D73              ; $0064 = 100
+00853  0D73              ; $03E8 = 1000
+00854  0D73              ; $2710 = 10000
+00855  0D73              ;********************************
+00856  0D73  01          XX0D73 .BYTE $01       ;1
+
+
+
+
+
+
+CROSSREF64......PAGE 0019
+
+LINE# LOC   CODE        LINE
+
+
+00857  0D74  0A                 .BYTE $0A       ;10
+00858  0D75  64                 .BYTE $64       ;100
+00859  0D76  E8                 .BYTE $E8       ;1000
+00860  0D77  10                 .BYTE $10       ;10000
+00861  0D78              ;********************************
+00862  0D78              ; HIGH BYTE 10'S DIGIT
+00863  0D78              ;********************************
+00864  0D78  00          XX0D78 .BYTE $00       ;1
+00865  0D79  00                 .BYTE $00       ;10
+00866  0D7A  00                 .BYTE $00       ;100
+00867  0D7B  03                 .BYTE $03       ;1000
+00868  0D7C  27                 .BYTE $27       ;10000
+00869  0D7D              ;********************************
+00870  0D7D              ; IF PRINTING, TURN SCREEN OFF
+00871  0D7D              ;********************************
+00872  0D7D  AD 30 08    SCROFF LDA PRTFLG
+00873  0D80  10 08              BPL XX0D8A
+00874  0D82  AD 11 D0           LDA SCREG
+00875  0D85  29 EF              AND #$EF
+00876  0D87  8D 11 D0           STA SCREG
+00877  0D8A  60          XX0D8A RTS 
+00878  0D8B              ;********************************
+00879  0D8B              ; TURN SCREEN ON
+00880  0D8B              ;********************************
+00881  0D8B  AD 11 D0    SCRON  LDA SCREG
+00882  0D8E  09 10              ORA #$10
+00883  0D90  8D 11 D0           STA SCREG
+00884  0D93  60                 RTS 
+00885  0D94              ;********************************
+00886  0D94              ; SAVE ZEROPAGE FROM $02-$1A
+00887  0D94              ;********************************
+00888  0D94  A2 18       SAVZPG LDX #$18
+00889  0D96  B5 02       XX0D96 LDA $02,X
+00890  0D98  9D 15 08           STA ZPGSTR,X
+00891  0D9B  CA                 DEX 
+00892  0D9C  10 F8              BPL XX0D96
+00893  0D9E  60                 RTS 
+00894  0D9F              ;********************************
+00895  0D9F              ; RESTORE ZEROPAGE FROM $02-$1A
+00896  0D9F              ;********************************
+00897  0D9F  A2 18       RETZPG LDX #$18
+00898  0DA1  BD 15 08    XX0DA1 LDA ZPGSTR,X
+00899  0DA4  95 02              STA $02,X
+00900  0DA6  CA                 DEX 
+00901  0DA7  10 F8              BPL XX0DA1
+00902  0DA9  60                 RTS 
+00903  0DAA              ;********************************
+00904  0DAA              ;
+00905  0DAA              ;********************************
+00906  0DAA              XX0DAA=*
+00907  0DAA              ;********************************
+00908  0DAA              ;
+00909  0DAA              ;********************************
+00910  0DAA              *=*+$0800
+00911  15AA              ;********************************
+
+
+
+
+
+
+CROSSREF64......PAGE 0020
+
+LINE# LOC   CODE        LINE
+
+
+00912  15AA              ;
+00913  15AA              ;********************************
+00914  15AA              XX15AA=*
+00915  15AA              ;********************************
+00916  15AA              .END
+
+
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ADRAY1   0003    ADRAY2   0005    BANNER   0D59    BASIC    080D
+ BASSFT   E386    CHANNL   0013    CHARAC   0007    CHKIN    FFC6
+ CHKOUT   FFC9    CHRIN    FFCF    CHROUT   FFD2    CLOSE    FFC3
+ CLRCHN   FFCC    COUNT    000B    DEVIN    082D    DIMFLG   000C
+ ENDCHR   0008    GARBFL   000F    INPFLG   0011    INTFLG   000E
+ LASTPT   0017    LINNUM   0014    MESSG    0D13    OPEN     FFC0
+ PCHAR    0BF8    PRTCHR   E716    PRTCR    0BEE    PRTFLG   0830
+ RETZPG   0D9F    SAVZPG   0D94    SCREG    D011    SCROFF   0D7D
+ SCRON    0D8B    SETLFS   FFBA    SETNAM   FFBD    SUBFLG   0010
+ TANSGN   0012    TEMPPT   0016    TEMPST   0019    TRMPOS   0009
+ VALTYP   000D    VERCK    000A    XRFF00   0D4B    XRFFNM   0844
+ XRFPNT   0006    XRLL00   0D3D    XRLPNT   0004    XX082E   082E
+ XX082F   082F    XX0831   0831    XX0832   0832    XX0833   0833
+ XX0834   0834    XX0841   0841    XX0849   0849    XX0854   0854
+ XX0855   0855    XX0856   0856    XX0857   0857    XX0858   0858
+ XX0889   0889    XX08E3   08E3    XX0929   0929    XX0950   0950
+ XX0981   0981    XX098A   098A    XX0998   0998    XX09A8   09A8
+ XX09BA   09BA    XX09EC   09EC    XX09FE   09FE    XX0A2B   0A2B
+ XX0A4D   0A4D    XX0A89   0A89    XX0AA0   0AA0    XX0ABB   0ABB
+ XX0AC2   0AC2    XX0ACC   0ACC    XX0AE4   0AE4    XX0AE6   0AE6
+ XX0AEE   0AEE    XX0B1D   0B1D    XX0B43   0B43    XX0B49   0B49
+ XX0B50   0B50    XX0B62   0B62    XX0B70   0B70    XX0B76   0B76
+ XX0B8C   0B8C    XX0B9E   0B9E    XX0BA1   0BA1    XX0BAF   0BAF
+ XX0BB6   0BB6    XX0BBA   0BBA    XX0BE5   0BE5    XX0BF3   0BF3
+ XX0BF6   0BF6    XX0C14   0C14    XX0C1C   0C1C    XX0C1F   0C1F
+ XX0C25   0C25    XX0C44   0C44    XX0C4C   0C4C    XX0C4E   0C4E
+ XX0C58   0C58    XX0C69   0C69    XX0C75   0C75    XX0C7E   0C7E
+ XX0C95   0C95    XX0C9C   0C9C    XX0CA9   0CA9    XX0CB4   0CB4
+ XX0CBE   0CBE    XX0CC1   0CC1    XX0CD4   0CD4    XX0CE4   0CE4
+ XX0CEB   0CEB    XX0CF6   0CF6    XX0D07   0D07    XX0D12   0D12
+ XX0D14   0D14    XX0D23   0D23    XX0D24   0D24    XX0D25   0D25
+ XX0D26   0D26    XX0D3C   0D3C    XX0D73   0D73    XX0D78   0D78
+ XX0D8A   0D8A    XX0D96   0D96    XX0DA1   0DA1    XX0DAA   0DAA
+ XX15AA   15AA    XXREF    080F    ZPGSTR   0815   
+
+END OF ASSEMBLY
+BCROSSREFNL.ASM......PAGE 0001
+
+LINE# LOC   CODE        LINE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CROSSREF64......PAGE 0002
+
+LINE# LOC   CODE        LINE
+
+
+00032  080F              .FIL   CROSSREF.ASM
+ERRORS = 00000
+
+
+SYMBOL TABLE
+
+SYMBOL VALUE
+ ADRAY1   0003    ADRAY2   0005    BANNER   0D59    BASIC    080D
+ BASSFT   E386    CHANNL   0013    CHARAC   0007    CHKIN    FFC6
+ CHKOUT   FFC9    CHRIN    FFCF    CHROUT   FFD2    CLOSE    FFC3
+ CLRCHN   FFCC    COUNT    000B    DEVIN    082D    DIMFLG   000C
+ ENDCHR   0008    GARBFL   000F    INPFLG   0011    INTFLG   000E
+ LASTPT   0017    LINNUM   0014    MESSG    0D13    OPEN     FFC0
+ PCHAR    0BF8    PRTCHR   E716    PRTCR    0BEE    PRTFLG   0830
+ RETZPG   0D9F    SAVZPG   0D94    SCREG    D011    SCROFF   0D7D
+ SCRON    0D8B    SETLFS   FFBA    SETNAM   FFBD    SUBFLG   0010
+ TANSGN   0012    TEMPPT   0016    TEMPST   0019    TRMPOS   0009
+ VALTYP   000D    VERCK    000A    XRFF00   0D4B    XRFFNM   0844
+ XRFPNT   0006    XRLL00   0D3D    XRLPNT   0004    XX082E   082E
+ XX082F   082F    XX0831   0831    XX0832   0832    XX0833   0833
+ XX0834   0834    XX0841   0841    XX0849   0849    XX0854   0854
+ XX0855   0855    XX0856   0856    XX0857   0857    XX0858   0858
+ XX0889   0889    XX08E3   08E3    XX0929   0929    XX0950   0950
+ XX0981   0981    XX098A   098A    XX0998   0998    XX09A8   09A8
+ XX09BA   09BA    XX09EC   09EC    XX09FE   09FE    XX0A2B   0A2B
+ XX0A4D   0A4D    XX0A89   0A89    XX0AA0   0AA0    XX0ABB   0ABB
+ XX0AC2   0AC2    XX0ACC   0ACC    XX0AE4   0AE4    XX0AE6   0AE6
+ XX0AEE   0AEE    XX0B1D   0B1D    XX0B43   0B43    XX0B49   0B49
+ XX0B50   0B50    XX0B62   0B62    XX0B70   0B70    XX0B76   0B76
+ XX0B8C   0B8C    XX0B9E   0B9E    XX0BA1   0BA1    XX0BAF   0BAF
+ XX0BB6   0BB6    XX0BBA   0BBA    XX0BE5   0BE5    XX0BF3   0BF3
+ XX0BF6   0BF6    XX0C14   0C14    XX0C1C   0C1C    XX0C1F   0C1F
+ XX0C25   0C25    XX0C44   0C44    XX0C4C   0C4C    XX0C4E   0C4E
+ XX0C58   0C58    XX0C69   0C69    XX0C75   0C75    XX0C7E   0C7E
+ XX0C95   0C95    XX0C9C   0C9C    XX0CA9   0CA9    XX0CB4   0CB4
+ XX0CBE   0CBE    XX0CC1   0CC1    XX0CD4   0CD4    XX0CE4   0CE4
+ XX0CEB   0CEB    XX0CF6   0CF6    XX0D07   0D07    XX0D12   0D12
+ XX0D14   0D14    XX0D23   0D23    XX0D24   0D24    XX0D25   0D25
+ XX0D26   0D26    XX0D3C   0D3C    XX0D73   0D73    XX0D78   0D78
+ XX0D8A   0D8A    XX0D96   0D96    XX0DA1   0DA1    XX0DAA   0DAA
+ XX15AA   15AA    XXREF    080F    ZPGSTR   0815   
+
+END OF ASSEMBLY
+
+CROSS REFERENCE......PAGE    1
+
+
+* ADRAY1 $0003    45
+* ADRAY2 $0005    46
+  BANNER $0D59   803   846
+  BASIC  $080D    21    26
+  BASSFT $E386    76   725
+* CHANNL $0013    59
+* CHARAC $0007    47
+  CHKIN  $FFC6    85   200   381   601   687
+  CHKOUT $FFC9    86   409   665   738
+  CHRIN  $FFCF    88   210   383   385   387   389   602   688   690   697
+
+                 711
+  CHROUT $FFD2    89   194   235   412   414   416   418   668   754
+  CLOSE  $FFC3    84   492   494   587   589
+  CLRCHN $FFCC    87   278   378   406   579   590   599   662   684   735
+
+* COUNT  $000B    51
+  DEVIN  $082D   107   167   199   375   377   408   596   598   659   664
+
+                 686   731   737
+* DIMFLG $000C    52
+* ENDCHR $0008    48
+* GARBFL $000F    55
+* INPFLG $0011    57
+* INTFLG $000E    54
+* LASTPT $0017    62
+* LINNUM $0014    60
+  MESSG  $0D13   204   205   825
+  OPEN   $FFC0    83   179   189   229   256   290   358   369
+  PCHAR  $0BF8   511   515   520   637   645   654   775   805
+  PRTCHR $E716    77   673
+  PRTCR  $0BEE   644   779   790
+  PRTFLG $0830   110   212   219   657   872
+  RETZPG $0D9F   724   897
+  SAVZPG $0D94    95   888
+  SCREG  $D011    72   874   876   881   883
+  SCROFF $0D7D   233   872
+  SCRON  $0D8B   723   881
+  SETLFS $FFBA    81   176   186   226   242   285   353   364
+  SETNAM $FFBD    82   178   188   228   254   289   357   368
+* SUBFLG $0010    56
+* TANSGN $0012    58
+* TEMPPT $0016    61
+* TEMPST $0019    63
+* TRMPOS $0009    49
+* VALTYP $000D    53
+* VERCK  $000A    50
+  XRFF00 $0D4B   269   842
+  XRFFNM $0844   129   270   334   365   366
+  XRFPNT $0006    68   314   315   328   331   445   448   451   454   463
+
+                 467   472   475   478   480   482   484
+  XRLL00 $0D3D   286   287   838
+  XRLPNT $0004    67   309   310   317   318   436   439   499   501   504
+
+                 506   528   531   564   566   568   570   572
+  XX082E $082E   108   262   301
+  XX082F $082F   109   263   304
+  XX0831 $0831   111   164   166   809   812
+  XX0832 $0832   112   165   810   814
+  XX0833 $0833   116   163   780   781   785   791   792
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    2
+
+
+  XX0834 $0834   117   335   354   355
+  XX0841 $0841   124   339
+  XX0849 $0849   134   341   342   346
+  XX0854 $0854   140   550   558
+  XX0855 $0855   141   609   616   634
+  XX0856 $0856   142   611   612   638
+  XX0857 $0857   143   247   251   252   706   715   719   720   721
+  XX0858 $0858   147   249
+  XX0889 $0889    96   161
+  XX08E3 $08E3   214   219
+  XX0929 $0929   269   273
+  XX0950 $0950   295   580
+  XX0981 $0981   322   329   332
+  XX098A $098A   325   327
+  XX0998 $0998   334   337
+  XX09A8 $09A8   341   348
+  XX09BA $09BA   344   350
+  XX09EC $09EC   374   487
+  XX09FE $09FE   376   383
+  XX0A2B $0A2B   399   406
+  XX0A4D $0A4D   404   423
+  XX0A89 $0A89   443   457
+  XX0AA0 $0AA0   456   470
+  XX0ABB $0ABB   419   483   485
+  XX0AC2 $0AC2   486   491
+  XX0ACC $0ACC   498   575
+  XX0AE4 $0AE4   502   507   510
+  XX0AE6 $0AE6   509   511
+  XX0AEE $0AEE   514   517
+  XX0B1D $0B1D   535   551   559
+  XX0B43 $0B43   554   556
+  XX0B49 $0B49   534   557
+  XX0B50 $0B50   545   560
+  XX0B62 $0B62   567   569
+  XX0B70 $0B70   574   579
+  XX0B76 $0B76   562   584
+  XX0B8C $0B8C   514   521   523   595
+  XX0B9E $0B9E   597   602
+  XX0BA1 $0BA1   541   606   811
+  XX0BAF $0BAF   612   639
+  XX0BB6 $0BB6   615   624
+  XX0BBA $0BBA   614   617
+  XX0BE5 $0BE5   633   635   637
+  XX0BF3 $0BF3   554   649
+  XX0BF6 $0BF6   512   518   535   649   650
+  XX0C14 $0C14   661   666
+  XX0C1C $0C1C   658   673
+  XX0C1F $0C1F   669   677
+  XX0C25 $0C25   294   359   370   684
+  XX0C44 $0C44   697   699
+  XX0C4C $0C4C   693   696   704
+  XX0C4E $0C4E   705   708
+  XX0C58 $0C58   710   717
+  XX0C69 $0C69   713   718
+  XX0C75 $0C75   591   723
+  XX0C7E $0C7E   206   722   729
+
+
+
+
+
+
+
+CROSS REFERENCE......PAGE    3
+
+
+  XX0C95 $0C95   732   746
+  XX0C9C $0C9C   750   756
+  XX0CA9 $0CA9   522   526   761
+  XX0CB4 $0CB4   766   769
+  XX0CBE $0CBE   772   775
+  XX0CC1 $0CC1   584   585   779   783   795
+  XX0CD4 $0CD4   552   560   790   796   815   816   817
+  XX0CE4 $0CE4   274   796
+  XX0CEB $0CEB   803   807
+  XX0CF6 $0CF6   804   809
+  XX0D07 $0D07   813   815
+  XX0D12 $0D12   794   820
+* XX0D14 $0D14   826
+* XX0D23 $0D23   827
+* XX0D24 $0D24   828
+* XX0D25 $0D25   829
+* XX0D26 $0D26   830
+* XX0D3C $0D3C   834
+  XX0D73 $0D73   619   626   856
+  XX0D78 $0D78   622   629   864
+  XX0D8A $0D8A   873   877
+  XX0D96 $0D96   889   892
+  XX0DA1 $0DA1   898   901
+  XX0DAA $0DAA   307   308   906
+  XX15AA $15AA   312   313   571   573   914
+* XXREF  $080F    95
+  ZPGSTR $0815   100   890   898
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
